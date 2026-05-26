@@ -244,6 +244,12 @@ async def list_collections(request: Request):
     return {"status": "success", "collections": [dict(r) for r in rows]}
 
 
+def _require_llm() -> "LLMProvider":
+    if not _llm:
+        raise HTTPException(status_code=503, detail="LLM provider not ready")
+    return _llm
+
+
 async def _handle_router_request(
     user_message: str,
     messages: List[Dict[str, Any]],
@@ -252,7 +258,13 @@ async def _handle_router_request(
     user_id: int,
 ):
     rag = _require_rag()
-    agent = await _router.route(user_message, tenant_id=tenant_id, user_id=user_id) if _router else None
+    llm = _require_llm()
+    agent = None
+    if _router:
+        try:
+            agent = await _router.route(user_message, tenant_id=tenant_id, user_id=user_id)
+        except Exception as e:
+            logger.warning("Router failed, using default collection", error=str(e))
 
     collection = agent["collection"] if agent else settings.OPENWEBUI_DEFAULT_COLLECTION
     agent_model = agent["model"] if agent else settings.DEFAULT_MODEL
@@ -280,7 +292,7 @@ async def _handle_router_request(
                 user_id=user_id,
                 system_prompt=agent_system_prompt,
             )
-            async for token in _llm.generate_stream(prompt, model=agent_model):
+            async for token in llm.generate_stream(prompt, model=agent_model):
                 chunk = {
                     "id": cid,
                     "object": "chat.completion.chunk",
