@@ -167,6 +167,41 @@ async def init_schema(pool: asyncpg.Pool) -> None:
         await conn.execute(
             "ALTER TABLE query_logs ADD COLUMN IF NOT EXISTS cached BOOLEAN DEFAULT FALSE"
         )
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS pending_agent_requests (
+                id SERIAL PRIMARY KEY,
+                tenant_id INTEGER NOT NULL DEFAULT 1,
+                user_id INTEGER NOT NULL DEFAULT 1,
+                raw_message TEXT NOT NULL,
+                params JSONB DEFAULT '{}',
+                status TEXT NOT NULL DEFAULT 'pending',
+                fulfilled_agent_id INTEGER,
+                fulfilled_agent_name TEXT,
+                created_at TIMESTAMPTZ DEFAULT NOW(),
+                fulfilled_at TIMESTAMPTZ
+            )
+        """)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS service_records (
+                id SERIAL PRIMARY KEY,
+                tespit_edilenler TEXT NOT NULL,
+                yapilan_islem TEXT NOT NULL
+            )
+        """)
+        # ASCII-folded shadow columns: queries match regardless of Turkish
+        # vs ASCII spelling ("hatası" vs "hatasi") and DB locale quirks.
+        await conn.execute("""
+            ALTER TABLE service_records ADD COLUMN IF NOT EXISTS tespit_norm TEXT
+            GENERATED ALWAYS AS (
+                lower(translate(tespit_edilenler, 'ıİşŞğĞüÜöÖçÇ', 'iIsSgGuUoOcC'))
+            ) STORED
+        """)
+        await conn.execute("""
+            ALTER TABLE service_records ADD COLUMN IF NOT EXISTS islem_norm TEXT
+            GENERATED ALWAYS AS (
+                lower(translate(yapilan_islem, 'ıİşŞğĞüÜöÖçÇ', 'iIsSgGuUoOcC'))
+            ) STORED
+        """)
         row = await conn.fetchval("SELECT id FROM tenants WHERE id = 1")
         if not row:
             await conn.execute("INSERT INTO tenants (id, name) VALUES (1, 'default')")

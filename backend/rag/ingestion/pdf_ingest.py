@@ -71,18 +71,8 @@ async def ingest_file(
     pages = _load_text(file_path)
 
     async with pool.acquire() as conn:
-        doc_row = await conn.fetchrow(
-            """
-            INSERT INTO documents
-                (tenant_id, user_id, original_filename, rag_collection, metadata)
-            VALUES ($1, $2, $3, $4, $5) RETURNING id
-            """,
-            tenant_id, user_id, os.path.basename(file_path),
-            collection, json.dumps(metadata),
-        )
-        document_id = doc_row["id"]
-
-        # Collect all new chunks first, then batch embed
+        # Collect all chunks first so a fully known file (e.g. the watcher
+        # re-scanning after a restart) doesn't create a duplicate documents row.
         all_chunks = []
         for page in pages:
             for chunk_text in _chunk_text(page["content"]):
@@ -94,6 +84,32 @@ async def ingest_file(
         for c in all_chunks:
             if not await chunk_exists(conn, content_hash(c["text"])):
                 new_chunks.append(c)
+
+        if not new_chunks:
+            existing_doc = await conn.fetchval(
+                """SELECT id FROM documents
+                   WHERE original_filename=$1 AND tenant_id=$2 AND user_id=$3
+                   ORDER BY id DESC LIMIT 1""",
+                os.path.basename(file_path), tenant_id, user_id,
+            )
+            return {
+                "chunks_created": chunks_created,
+                "chunks_stored": 0,
+                "document_id": existing_doc,
+                "collection": collection,
+                "already_ingested": True,
+            }
+
+        doc_row = await conn.fetchrow(
+            """
+            INSERT INTO documents
+                (tenant_id, user_id, original_filename, rag_collection, metadata)
+            VALUES ($1, $2, $3, $4, $5) RETURNING id
+            """,
+            tenant_id, user_id, os.path.basename(file_path),
+            collection, json.dumps(metadata),
+        )
+        document_id = doc_row["id"]
 
         # Batch embed all new chunks in one call
         embeddings = await llm.get_embeddings([c["text"] for c in new_chunks])

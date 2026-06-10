@@ -82,6 +82,18 @@ class RAGPipeline:
             await cache_invalidate_collection(self.pool, collection)
         except Exception:
             pass
+        # An open "create agent" chat request claims this document first; the
+        # fulfilled agent covers the collection, so auto-creation below skips.
+        # Re-ingests of already-known content (watcher re-scans) don't count.
+        if not result.get("already_ingested"):
+            from backend.agent_creation import fulfill_pending_after_ingest
+            await fulfill_pending_after_ingest(
+                self.pool, self.llm, self.settings,
+                collection=collection,
+                source_file=os.path.basename(file_path),
+                tenant_id=tenant_id,
+                user_id=user_id,
+            )
         await self.maybe_create_agent(collection, tenant_id, user_id)
         return result
 
@@ -122,6 +134,15 @@ class RAGPipeline:
                     get_router().invalidate_cache()
                 except RuntimeError:
                     pass
+            from backend.agent_creation import write_definition_file
+            write_definition_file(
+                self.settings.AGENTS_STORE_DIR,
+                agent_id=agent_id,
+                name=name,
+                system_prompt=system_prompt,
+                model=self.settings.DEFAULT_MODEL,
+                collection=collection,
+            )
             logger.info("Auto-created agent for collection", collection=collection, name=name)
         except Exception as e:
             logger.warning("Auto-agent creation failed", collection=collection, error=str(e))

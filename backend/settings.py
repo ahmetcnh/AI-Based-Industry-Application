@@ -50,6 +50,9 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE: int = 50 * 1024 * 1024
     ALLOWED_EXTENSIONS: str = ".pdf,.docx,.txt,.csv,.xlsx,.md"
 
+    AGENTS_STORE_DIR: str = "agents_store"
+    PENDING_AGENT_TTL_MINUTES: int = 30
+
     ENABLE_CAG: bool = True
     CAG_CACHE_TTL_SECONDS: int = 300
     CAG_MAX_ENTRIES: int = 200

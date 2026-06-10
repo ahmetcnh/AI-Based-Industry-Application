@@ -116,6 +116,18 @@ class FileWatcher:
             logger.error(f"Error processing file {file_path}: {e}")
             return False
 
+    async def scan_now(self) -> int:
+        """Immediate one-off scan so a file attached to the current chat
+        message is ingested without waiting for the next interval."""
+        processed = 0
+        for watch_dir in self.watch_dirs:
+            if not watch_dir.exists():
+                continue
+            for file_path in self._scan_directory(watch_dir):
+                if await self._process_file(file_path):
+                    processed += 1
+        return processed
+
     async def _watch_loop(self):
         logger.info("File watcher started")
         while self._running:

@@ -57,7 +57,7 @@ class RouterAgent:
 
         async with self.pool.acquire() as conn:
             rows = await conn.fetch(
-                "SELECT id, name, system_prompt, model, collection, embedding "
+                "SELECT id, name, system_prompt, model, collection, type, embedding "
                 "FROM agents WHERE tenant_id=$1 AND user_id=$2 AND embedding IS NOT NULL",
                 tenant_id, user_id,
             )
@@ -88,33 +88,15 @@ class RouterAgent:
 
         best_score, best_agent = scored[0]
 
-        logger.info("Routing scores", top_agent=best_agent["name"], score=round(best_score, 3))
-
-        if best_score >= CONFIDENCE_THRESHOLD:
-            self._cache_set(cache_key, best_agent)
-            return best_agent
-
-        # LLM fallback: pick from top-3 by name
-        top3 = [agent for _, agent in scored[:3]]
-        choices = "\n".join(
-            f"- {a['name']}: {(a.get('system_prompt') or '')[:80]}" for a in top3
+        # No LLM fallback below the threshold: an extra model in VRAM costs a
+        # multi-second swap on small GPUs, and the fallback nearly always
+        # settled on the top cosine agent anyway.
+        logger.info(
+            "Routing decision",
+            agent=best_agent["name"],
+            score=round(best_score, 3),
+            confident=best_score >= CONFIDENCE_THRESHOLD,
+            top3=[(a["name"], round(s, 3)) for s, a in scored[:3]],
         )
-        prompt = (
-            f"Aşağıdaki uzman agentlardan hangisi bu soruyu yanıtlamak için en uygun?\n\n"
-            f"Soru: {question}\n\nAgentlar:\n{choices}\n\n"
-            f"Sadece seçilen agentin tam adını yaz, başka hiçbir şey yazma:"
-        )
-
-        try:
-            chosen_name = (await self.llm.generate(prompt, model="ollama:llama3.2:1b")).strip()
-        except Exception as e:
-            logger.warning("LLM routing fallback failed, using top cosine", error=str(e))
-            chosen_name = ""
-
-        selected = next(
-            (a for a in top3 if a["name"].lower() == chosen_name.lower()),
-            best_agent,  # fallback to top cosine if name not recognized
-        )
-        logger.info("LLM routing decision", chosen=chosen_name, selected=selected["name"])
-        self._cache_set(cache_key, selected)
-        return selected
+        self._cache_set(cache_key, best_agent)
+        return best_agent

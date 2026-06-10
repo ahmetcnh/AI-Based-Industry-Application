@@ -53,6 +53,16 @@ async def lifespan(app: FastAPI):
             await run_seed_if_needed(_pool, _llm, settings.EXCEL_SEED_PATH)
         except Exception as e:
             logger.warning("Excel seed failed", error=str(e))
+        try:
+            from backend.sql_agent import seed_service_records
+            await seed_service_records(_pool, settings.EXCEL_SEED_PATH)
+        except Exception as e:
+            logger.warning("service_records seed failed", error=str(e))
+    try:
+        from backend.sql_agent import ensure_sql_agent
+        await ensure_sql_agent(_pool, _llm, settings)
+    except Exception as e:
+        logger.warning("SQL agent setup failed", error=str(e))
 
     if settings.OPENWEBUI_WATCH_ENABLED:
         try:
@@ -173,7 +183,8 @@ async def _condense_question(
             f"Sohbet geçmişi:\n{history_text}\n\n"
             f"Son soru: {last_user_msg}\n\n"
             "Sohbet geçmişini kullanarak son soruyu tek başına anlaşılır, bağımsız bir soruya dönüştür. "
-            "Sadece yeniden yazılmış soruyu yaz."
+            "Eğer son soru önceki konudan tamamen bağımsız yeni bir konuysa, soruyu değiştirmeden "
+            "olduğu gibi geri ver. Sadece soruyu yaz."
         )
         condensed = await llm.generate(prompt)
         condensed = condensed.strip()
@@ -188,6 +199,81 @@ async def root():
 
 
 from backend.answer_cache import cache_lookup as _ac_lookup, cache_store as _ac_store
+from backend import agent_creation
+from backend import sql_agent as sql_agent_mod
+
+
+def _static_response(text: str, model: str, stream: bool):
+    """Return a fixed text as a normal or SSE response (warnings, confirmations)."""
+    if not stream:
+        return _build_response(text, model)
+
+    async def g():
+        cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+        created = int(datetime.now(timezone.utc).timestamp())
+        chunk = {
+            "id": cid, "object": "chat.completion.chunk", "created": created,
+            "model": model,
+            "choices": [{"index": 0, "delta": {"content": text}, "finish_reason": None}],
+        }
+        yield f"data: {json.dumps(chunk)}\n\n"
+        yield f"data: {json.dumps({**chunk, 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(g(), media_type="text/event-stream")
+
+
+async def _handle_agent_creation(
+    user_message: str,
+    model: str,
+    stream: bool,
+    tenant_id: int,
+    user_id: int,
+):
+    """User asked to create an agent: bind to a just-uploaded file, or warn and wait."""
+    llm = _require_llm()
+    # A file attached to this same message may not be ingested yet; scan now.
+    if _file_watcher:
+        try:
+            await _file_watcher.scan_now()
+        except Exception as e:
+            logger.warning("On-demand scan failed", error=str(e))
+
+    params = await agent_creation.extract_params(user_message, llm)
+    doc = await agent_creation.find_recent_document(
+        _pool, tenant_id=tenant_id, user_id=user_id
+    )
+    if doc:
+        agent = await agent_creation.upsert_agent_for_collection(
+            _pool, llm, settings,
+            collection=doc["rag_collection"],
+            name=params.get("name"),
+            role=params.get("role"),
+            source_file=doc.get("original_filename"),
+            tenant_id=tenant_id,
+            user_id=user_id,
+        )
+        return _static_response(
+            f"✅ **{agent['name']}** agent'ı oluşturuldu (koleksiyon: {agent['collection']}).\n\n"
+            f"Tanım dosyası `agents_store/` klasörüne yazıldı. "
+            f"`coiltech-router` modeli artık ilgili soruları bu agent'a yönlendirecek.",
+            model, stream,
+        )
+
+    await agent_creation.create_pending(
+        _pool,
+        raw_message=user_message,
+        params=params,
+        ttl_minutes=settings.PENDING_AGENT_TTL_MINUTES,
+        tenant_id=tenant_id,
+        user_id=user_id,
+    )
+    return _static_response(
+        "⚠️ Agent oluşturmak için bir doküman gerekli. Lütfen agent'ın kullanacağı dosyayı "
+        "(PDF, DOCX, XLSX veya TXT) bu sohbete yükleyin.\n\n"
+        "Dosyayı yüklediğinizde agent, az önceki isteğinizdeki bilgilerle otomatik olarak oluşturulacak.",
+        model, stream,
+    )
 
 
 def _build_citation_chunk(sources: list, cid: str, model: str) -> str:
@@ -405,6 +491,7 @@ async def _handle_router_request(
     stream: bool,
     tenant_id: int,
     user_id: int,
+    prefix: str = "",
 ):
     rag = _require_rag()
     llm = _require_llm()
@@ -418,7 +505,7 @@ async def _handle_router_request(
     collection = agent["collection"] if agent else settings.OPENWEBUI_DEFAULT_COLLECTION
     agent_model = agent["model"] if agent else settings.DEFAULT_MODEL
     agent_system_prompt = agent["system_prompt"] if agent else None
-    routing_label = f"[→ {agent['name']}]\n\n" if agent else ""
+    routing_label = prefix + (f"[→ {agent['name']}]\n\n" if agent else "")
 
     # Cache lookup for router path
     cached = await _cache_lookup(_pool, llm, user_message, tenant_id, user_id, collection)
@@ -437,6 +524,16 @@ async def _handle_router_request(
         await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
         return _build_response(routing_label + cached["answer"], "coiltech-router")
 
+    # SQL agent: answer from service_records via NL→SQL; on no rows / bad SQL
+    # fall back to RAG over the default maintenance collection.
+    sql_result = None
+    if agent and agent.get("type") == "sql":
+        sql_result = await sql_agent_mod.try_sql_path(_pool, llm, user_message)
+        if sql_result is None:
+            logger.info("SQL path empty, falling back to RAG")
+            collection = settings.OPENWEBUI_DEFAULT_COLLECTION
+            agent_system_prompt = None
+
     if stream:
         async def gen():
             cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
@@ -450,14 +547,19 @@ async def _handle_router_request(
                     "choices": [{"index": 0, "delta": {"content": routing_label}, "finish_reason": None}],
                 }
                 yield f"data: {json.dumps(label_chunk)}\n\n"
-            # RAG retrieve + stream
-            prompt, sources = await rag._retrieve(
-                question=user_message,
-                collection=collection,
-                tenant_id=tenant_id,
-                user_id=user_id,
-                system_prompt=agent_system_prompt,
-            )
+            if sql_result:
+                prompt = sql_agent_mod.build_summary_prompt(
+                    user_message, sql_result["rows"], agent_system_prompt
+                )
+                sources = []
+            else:
+                prompt, sources = await rag._retrieve(
+                    question=user_message,
+                    collection=collection,
+                    tenant_id=tenant_id,
+                    user_id=user_id,
+                    system_prompt=agent_system_prompt,
+                )
             accumulated = []
             async for token in llm.generate_stream(prompt, model=agent_model):
                 accumulated.append(token)
@@ -485,14 +587,21 @@ async def _handle_router_request(
                                tenant_id, user_id, collection)
         return StreamingResponse(gen(), media_type="text/event-stream")
 
-    result = await rag.query(
-        question=user_message,
-        collection=collection,
-        tenant_id=tenant_id,
-        user_id=user_id,
-        model=agent_model,
-        system_prompt=agent_system_prompt,
-    )
+    if sql_result:
+        prompt = sql_agent_mod.build_summary_prompt(
+            user_message, sql_result["rows"], agent_system_prompt
+        )
+        answer = await llm.generate(prompt, model=agent_model)
+        result = {"answer": answer.strip(), "sources": []}
+    else:
+        result = await rag.query(
+            question=user_message,
+            collection=collection,
+            tenant_id=tenant_id,
+            user_id=user_id,
+            model=agent_model,
+            system_prompt=agent_system_prompt,
+        )
     await _cache_store(_pool, llm, user_message, result["answer"],
                        result.get("sources", []), tenant_id, user_id, collection)
     response = _build_response(routing_label + result["answer"], "coiltech-router")
@@ -520,6 +629,22 @@ async def openai_chat_completions(request: Request):
     if utility is not None:
         return _build_response(utility, model)
 
+    # "Bir agent oluştur" / "create agent" → agent creation flow (raw message,
+    # before condensation so history can't rewrite the command)
+    if agent_creation.detect_intent(user_message):
+        return await _handle_agent_creation(
+            user_message, model, stream, tenant_id, user_id
+        )
+
+    # A file upload may have fulfilled a pending agent request since the last
+    # message; announce it once at the top of this response.
+    confirm_prefix = ""
+    announced = await agent_creation.pop_unannounced(
+        _pool, tenant_id=tenant_id, user_id=user_id
+    )
+    if announced:
+        confirm_prefix = f"✅ **{announced}** agent'ı oluşturuldu.\n\n"
+
     # Condense follow-up questions into standalone queries
     llm = _require_llm()
     condensed = await _condense_question(messages, user_message, llm)
@@ -527,10 +652,30 @@ async def openai_chat_completions(request: Request):
 
     if model == "coiltech-router":
         return await _handle_router_request(
-            question, messages, stream, tenant_id, user_id
+            question, messages, stream, tenant_id, user_id, prefix=confirm_prefix
         )
 
+    # Virtual model ids (coiltech-rag, agent-*) are not real Ollama models;
+    # resolve them to a real generation model before calling the LLM.
     collection = collection_name or settings.OPENWEBUI_DEFAULT_COLLECTION
+    gen_model = model
+    agent_system_prompt = None
+    if model == "coiltech-rag":
+        gen_model = settings.DEFAULT_MODEL
+    else:
+        agent_match = re.match(r"^agent-(\d+)-", model)
+        if agent_match:
+            gen_model = settings.DEFAULT_MODEL
+            async with _pool.acquire() as conn:
+                agent_row = await conn.fetchrow(
+                    "SELECT system_prompt, model, collection FROM agents "
+                    "WHERE id=$1 AND tenant_id=$2 AND user_id=$3",
+                    int(agent_match.group(1)), tenant_id, user_id,
+                )
+            if agent_row:
+                gen_model = agent_row["model"] or settings.DEFAULT_MODEL
+                agent_system_prompt = agent_row["system_prompt"]
+                collection = collection_name or agent_row["collection"] or collection
 
     # Cache lookup (uses embedding LRU so fast on repeated questions)
     import time as _time
@@ -544,7 +689,7 @@ async def openai_chat_completions(request: Request):
                     "id": cid, "object": "chat.completion.chunk",
                     "created": int(datetime.now(timezone.utc).timestamp()),
                     "model": model,
-                    "choices": [{"index": 0, "delta": {"content": cached["answer"]}, "finish_reason": None}],
+                    "choices": [{"index": 0, "delta": {"content": confirm_prefix + cached["answer"]}, "finish_reason": None}],
                 }
                 yield f"data: {json.dumps(chunk)}\n\n"
                 yield f"data: {json.dumps({**chunk, 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
@@ -552,7 +697,7 @@ async def openai_chat_completions(request: Request):
                 await _log_cache_hit(_pool, question, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
             return StreamingResponse(cached_gen(), media_type="text/event-stream")
         await _log_cache_hit(_pool, question, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
-        return _build_response(cached["answer"], model)
+        return _build_response(confirm_prefix + cached["answer"], model)
 
     if stream:
         async def gen():
@@ -561,10 +706,19 @@ async def openai_chat_completions(request: Request):
                 collection=collection,
                 tenant_id=tenant_id,
                 user_id=user_id,
+                system_prompt=agent_system_prompt,
             )
             cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+            if confirm_prefix:
+                pchunk = {
+                    "id": cid, "object": "chat.completion.chunk",
+                    "created": int(datetime.now(timezone.utc).timestamp()),
+                    "model": model,
+                    "choices": [{"index": 0, "delta": {"content": confirm_prefix}, "finish_reason": None}],
+                }
+                yield f"data: {json.dumps(pchunk)}\n\n"
             accumulated = []
-            async for token in llm.generate_stream(prompt, model=model):
+            async for token in llm.generate_stream(prompt, model=gen_model):
                 accumulated.append(token)
                 chunk = {
                     "id": cid,
@@ -595,11 +749,12 @@ async def openai_chat_completions(request: Request):
         collection=collection,
         tenant_id=tenant_id,
         user_id=user_id,
-        model=model,
+        model=gen_model,
+        system_prompt=agent_system_prompt,
     )
     await _cache_store(_pool, llm, question, result["answer"],
                        result.get("sources", []), tenant_id, user_id, collection)
-    response = _build_response(result["answer"], model)
+    response = _build_response(confirm_prefix + result["answer"], model)
     response_data = json.loads(response.body)
     response_data["sources"] = result.get("sources", [])
     return JSONResponse(response_data)

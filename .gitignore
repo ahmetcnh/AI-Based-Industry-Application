@@ -179,6 +179,12 @@ models/
 # Sentence transformers cache
 sentence_transformers/
 
+# Runtime-generated agent definition files
+agents_store/
+
+# Demo/test artifacts
+sales_quotes_test.txt
+
 # -----------------------------------------------------------------------------
 # Docker
 # -----------------------------------------------------------------------------
