@@ -187,6 +187,24 @@ async def root():
     return {"name": settings.APP_NAME, "version": settings.APP_VERSION, "status": "running"}
 
 
+from backend.answer_cache import cache_lookup as _ac_lookup, cache_store as _ac_store
+
+
+async def _cache_lookup(pool, llm, question, tenant_id, user_id, collection):
+    if not settings.ANSWER_CACHE_ENABLED:
+        return None
+    return await _ac_lookup(
+        pool, llm, question, tenant_id, user_id, collection,
+        settings.ANSWER_CACHE_TTL_SECONDS,
+    )
+
+
+async def _cache_store(pool, llm, question, answer, sources, tenant_id, user_id, collection):
+    if not settings.ANSWER_CACHE_ENABLED:
+        return
+    await _ac_store(pool, llm, question, answer, sources, tenant_id, user_id, collection)
+
+
 @app.get("/health", tags=["Health"])
 async def health():
     return {"status": "ok", "service": settings.APP_NAME}
@@ -313,6 +331,20 @@ async def _handle_router_request(
     agent_system_prompt = agent["system_prompt"] if agent else None
     routing_label = f"[→ {agent['name']}]\n\n" if agent else ""
 
+    # Cache lookup for router path
+    cached = await _cache_lookup(_pool, llm, user_message, tenant_id, user_id, collection)
+    if cached:
+        if stream:
+            async def router_cached_gen():
+                cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+                if routing_label:
+                    yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': routing_label}, 'finish_reason': None}]})}\n\n"
+                yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': cached['answer']}, 'finish_reason': None}]})}\n\n"
+                yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
+                yield "data: [DONE]\n\n"
+            return StreamingResponse(router_cached_gen(), media_type="text/event-stream")
+        return _build_response(routing_label + cached["answer"], "coiltech-router")
+
     if stream:
         async def gen():
             cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
@@ -334,7 +366,9 @@ async def _handle_router_request(
                 user_id=user_id,
                 system_prompt=agent_system_prompt,
             )
+            accumulated = []
             async for token in llm.generate_stream(prompt, model=agent_model):
+                accumulated.append(token)
                 chunk = {
                     "id": cid,
                     "object": "chat.completion.chunk",
@@ -352,6 +386,9 @@ async def _handle_router_request(
             }
             yield f"data: {json.dumps(done)}\n\n"
             yield "data: [DONE]\n\n"
+            full_answer = "".join(accumulated)
+            await _cache_store(_pool, llm, user_message, full_answer, sources,
+                               tenant_id, user_id, collection)
         return StreamingResponse(gen(), media_type="text/event-stream")
 
     result = await rag.query(
@@ -362,6 +399,8 @@ async def _handle_router_request(
         model=agent_model,
         system_prompt=agent_system_prompt,
     )
+    await _cache_store(_pool, llm, user_message, result["answer"],
+                       result.get("sources", []), tenant_id, user_id, collection)
     return _build_response(routing_label + result["answer"], "coiltech-router")
 
 
@@ -396,6 +435,24 @@ async def openai_chat_completions(request: Request):
 
     collection = collection_name or settings.OPENWEBUI_DEFAULT_COLLECTION
 
+    # Cache lookup (uses embedding LRU so fast on repeated questions)
+    cached = await _cache_lookup(_pool, llm, question, tenant_id, user_id, collection)
+    if cached:
+        if stream:
+            async def cached_gen():
+                cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+                chunk = {
+                    "id": cid, "object": "chat.completion.chunk",
+                    "created": int(datetime.now(timezone.utc).timestamp()),
+                    "model": model,
+                    "choices": [{"index": 0, "delta": {"content": cached["answer"]}, "finish_reason": None}],
+                }
+                yield f"data: {json.dumps(chunk)}\n\n"
+                yield f"data: {json.dumps({**chunk, 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
+                yield "data: [DONE]\n\n"
+            return StreamingResponse(cached_gen(), media_type="text/event-stream")
+        return _build_response(cached["answer"], model)
+
     if stream:
         async def gen():
             prompt, sources = await rag._retrieve(
@@ -405,7 +462,9 @@ async def openai_chat_completions(request: Request):
                 user_id=user_id,
             )
             cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+            accumulated = []
             async for token in llm.generate_stream(prompt, model=model):
+                accumulated.append(token)
                 chunk = {
                     "id": cid,
                     "object": "chat.completion.chunk",
@@ -423,6 +482,9 @@ async def openai_chat_completions(request: Request):
             }
             yield f"data: {json.dumps(done)}\n\n"
             yield "data: [DONE]\n\n"
+            full_answer = "".join(accumulated)
+            await _cache_store(_pool, llm, question, full_answer, sources,
+                               tenant_id, user_id, collection)
         return StreamingResponse(gen(), media_type="text/event-stream")
 
     result = await rag.query(
@@ -432,6 +494,8 @@ async def openai_chat_completions(request: Request):
         user_id=user_id,
         model=model,
     )
+    await _cache_store(_pool, llm, question, result["answer"],
+                       result.get("sources", []), tenant_id, user_id, collection)
     return _build_response(result["answer"], model)
 
 

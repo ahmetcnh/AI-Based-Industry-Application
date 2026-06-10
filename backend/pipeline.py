@@ -76,16 +76,12 @@ class RAGPipeline:
             user_id=user_id,
             metadata=metadata,
         )
-        if self.settings.RAG_USE_GRAPH:
-            try:
-                from backend.rag.graph.client import get_driver
-                driver = get_driver(
-                    self.settings.NEO4J_URI,
-                    self.settings.NEO4J_USER,
-                    self.settings.NEO4J_PASSWORD,
-                )
-            except Exception as e:
-                logger.warning("Graph ingest skipped", error=str(e))
+        # Invalidate answer cache for this collection since new docs may change answers
+        try:
+            from backend.answer_cache import cache_invalidate_collection
+            await cache_invalidate_collection(self.pool, collection)
+        except Exception:
+            pass
         await self.maybe_create_agent(collection, tenant_id, user_id)
         return result
 
@@ -170,6 +166,7 @@ class RAGPipeline:
             language=self.settings.DEFAULT_ANSWER_LANGUAGE,
             graph_retriever=graph_retriever,
             system_prompt=system_prompt,
+            model=model,
         )
 
     async def _retrieve(
