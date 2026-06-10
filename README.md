@@ -58,12 +58,14 @@ Coiltech endüstriyel otomasyon platformu için doküman tabanlı soru-cevap, ç
 
 ```
 bitirme2/
-├── backend/
+├── backend/                     # Üretim kodu (FastAPI + PostgreSQL + pgvector)
 │   ├── main.py                  # FastAPI uygulaması, tüm endpoint'ler
 │   ├── settings.py              # Pydantic BaseSettings (env vars)
 │   ├── db.py                    # asyncpg pool, pgvector şema init
 │   ├── llm_providers.py         # Ollama + DeepSeek LLM factory
 │   ├── pipeline.py              # RAGPipeline: ingest + query orchestration
+│   ├── answer_cache.py          # Semantik cevap önbelleği (pgvector cosine)
+│   ├── router_agent.py          # Embedding tabanlı agent yönlendirici
 │   ├── tenancy.py               # X-Tenant-ID / X-User-ID middleware
 │   ├── tenants.py               # Tenant & kullanıcı yönetim API'leri
 │   ├── agents.py                # Agent CRUD (PostgreSQL)
@@ -71,26 +73,29 @@ bitirme2/
 │   ├── file_watcher.py          # Dizin izleyici, otomatik ingest
 │   ├── Dockerfile
 │   └── rag/
-│       ├── store/
-│       │   └── __init__.py      # insert_chunk, vector_search, bm25_search
-│       ├── ingestion/
-│       │   ├── excel_seed.py    # issue_solution_final.xlsx → chunks
-│       │   └── pdf_ingest.py    # PDF/DOCX/TXT/XLSX chunker + embed
-│       ├── retrieval/
-│       │   ├── hybrid.py        # Vektör + BM25 harmanlama (alpha=0.3)
-│       │   ├── query_engine.py  # Ana RAG pipeline orkestrasyon
-│       │   ├── reranker.py      # CrossEncoder reranking (lazy)
-│       │   ├── query_expansion.py # LLM ile sorgu genişletme
-│       │   └── supplement.py    # ILIKE fallback arama
-│       └── graph/
-│           ├── client.py        # Neo4j driver wrapper
-│           ├── ingest.py        # Varlık çıkarma → Neo4j düğüm/kenar
-│           └── retriever.py     # Graf bağlam zenginleştirme
-├── openwebui_functions/
-│   └── agent_manager.py         # Open WebUI Function plugin
+│       ├── store/               # insert_chunk, vector_search, bm25_search
+│       ├── ingestion/           # excel_seed.py, pdf_ingest.py (toplu embedding)
+│       ├── retrieval/           # hybrid.py, query_engine.py, reranker.py
+│       └── graph/               # Neo4j entegrasyonu (isteğe bağlı)
+├── eval/
+│   ├── questions.json           # ~20 Türkçe soru-anahtar kelime çifti
+│   └── run_eval.py              # Değerlendirme scripti (canlı stack gerekir)
+├── tests/                       # Yeni birim testleri (servis gerektirmez)
+│   └── test_backend.py
+├── legacy/                      # Eski ChromaDB/SQLite mimarisi (arşiv)
+│   ├── agents/
+│   ├── api/
+│   ├── config/
+│   ├── database/
+│   ├── demo/
+│   ├── llm/
+│   ├── rag/
+│   ├── full_system_test.py
+│   └── tests/
+│       └── test_platform.py
+├── openwebui_functions/         # Open WebUI Function plugin
 ├── docker-compose.yml
 ├── .env.example
-├── .env
 ├── requirements.txt
 └── issue_solution_final.xlsx    # Çekirdek bilgi tabanı (Türkçe)
 ```
