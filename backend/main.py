@@ -237,6 +237,18 @@ async def _cache_store(pool, llm, question, answer, sources, tenant_id, user_id,
     await _ac_store(pool, llm, question, answer, sources, tenant_id, user_id, collection)
 
 
+async def _log_cache_hit(pool, question: str, collection: str, tenant_id: int, user_id: int, duration_ms: int) -> None:
+    try:
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """INSERT INTO query_logs (tenant_id, user_id, query, collection, sources_count, confidence, duration_ms, cached)
+                   VALUES ($1, $2, $3, $4, 0, 1.0, $5, TRUE)""",
+                tenant_id, user_id, question, collection, duration_ms,
+            )
+    except Exception:
+        pass
+
+
 @app.get("/health", tags=["Health"])
 async def health():
     return {"status": "ok", "service": settings.APP_NAME}
@@ -274,6 +286,47 @@ async def llm_status():
     if not _llm:
         return {"status": "not_ready"}
     return await _llm.check_health()
+
+
+@app.get("/metrics", tags=["Health"])
+async def get_metrics(hours: int = 24):
+    if not _pool:
+        raise HTTPException(status_code=503, detail="Database not ready")
+    async with _pool.acquire() as conn:
+        rows = await conn.fetch(
+            """
+            SELECT
+                collection,
+                COUNT(*) AS query_count,
+                AVG(duration_ms) AS avg_duration_ms,
+                percentile_cont(0.95) WITHIN GROUP (ORDER BY duration_ms) AS p95_duration_ms,
+                AVG(confidence) AS avg_confidence,
+                AVG(sources_count) AS avg_sources_count,
+                COUNT(*) FILTER (WHERE sources_count = 0 OR sources_count IS NULL) AS zero_source_queries,
+                COUNT(*) FILTER (WHERE cached = TRUE) AS cache_hits
+            FROM query_logs
+            WHERE created_at > NOW() - ($1 || ' hours')::INTERVAL
+            GROUP BY ROLLUP(collection)
+            ORDER BY collection NULLS LAST
+            """,
+            str(hours),
+        )
+    result = []
+    for r in rows:
+        total = r["query_count"] or 0
+        hits = r["cache_hits"] or 0
+        result.append({
+            "collection": r["collection"],
+            "query_count": total,
+            "avg_duration_ms": round(r["avg_duration_ms"] or 0, 1),
+            "p95_duration_ms": round(r["p95_duration_ms"] or 0, 1),
+            "avg_confidence": round(r["avg_confidence"] or 0, 4),
+            "avg_sources_count": round(r["avg_sources_count"] or 0, 2),
+            "zero_source_queries": r["zero_source_queries"] or 0,
+            "cache_hits": hits,
+            "cache_hit_rate": round(hits / total, 4) if total else 0.0,
+        })
+    return {"hours": hours, "metrics": result}
 
 
 @app.post("/upload", tags=["Documents"])
@@ -366,6 +419,7 @@ async def _handle_router_request(
     # Cache lookup for router path
     cached = await _cache_lookup(_pool, llm, user_message, tenant_id, user_id, collection)
     if cached:
+        import time as _time; _t0 = _time.time()
         if stream:
             async def router_cached_gen():
                 cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
@@ -374,7 +428,9 @@ async def _handle_router_request(
                 yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': cached['answer']}, 'finish_reason': None}]})}\n\n"
                 yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
                 yield "data: [DONE]\n\n"
+                await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
             return StreamingResponse(router_cached_gen(), media_type="text/event-stream")
+        await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
         return _build_response(routing_label + cached["answer"], "coiltech-router")
 
     if stream:
@@ -473,8 +529,10 @@ async def openai_chat_completions(request: Request):
     collection = collection_name or settings.OPENWEBUI_DEFAULT_COLLECTION
 
     # Cache lookup (uses embedding LRU so fast on repeated questions)
+    import time as _time
     cached = await _cache_lookup(_pool, llm, question, tenant_id, user_id, collection)
     if cached:
+        _t0 = _time.time()
         if stream:
             async def cached_gen():
                 cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
@@ -487,7 +545,9 @@ async def openai_chat_completions(request: Request):
                 yield f"data: {json.dumps(chunk)}\n\n"
                 yield f"data: {json.dumps({**chunk, 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
                 yield "data: [DONE]\n\n"
+                await _log_cache_hit(_pool, question, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
             return StreamingResponse(cached_gen(), media_type="text/event-stream")
+        await _log_cache_hit(_pool, question, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
         return _build_response(cached["answer"], model)
 
     if stream:
