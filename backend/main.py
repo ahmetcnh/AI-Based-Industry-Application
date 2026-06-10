@@ -289,9 +289,12 @@ async def llm_status():
 
 
 @app.get("/metrics", tags=["Health"])
-async def get_metrics(hours: int = 24):
+async def get_metrics(request: Request, hours: int = 24):
     if not _pool:
         raise HTTPException(status_code=503, detail="Database not ready")
+    # Clamp hours to prevent full-table scans
+    hours = max(1, min(hours, 720))
+    tenant_id, user_id = get_tenant(request)
     async with _pool.acquire() as conn:
         rows = await conn.fetch(
             """
@@ -305,11 +308,12 @@ async def get_metrics(hours: int = 24):
                 COUNT(*) FILTER (WHERE sources_count = 0 OR sources_count IS NULL) AS zero_source_queries,
                 COUNT(*) FILTER (WHERE cached = TRUE) AS cache_hits
             FROM query_logs
-            WHERE created_at > NOW() - ($1 || ' hours')::INTERVAL
+            WHERE tenant_id=$1 AND user_id=$2
+              AND created_at > NOW() - ($3 || ' hours')::INTERVAL
             GROUP BY ROLLUP(collection)
             ORDER BY collection NULLS LAST
             """,
-            str(hours),
+            tenant_id, user_id, str(hours),
         )
     result = []
     for r in rows:
