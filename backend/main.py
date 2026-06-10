@@ -75,6 +75,8 @@ async def lifespan(app: FastAPI):
 
     if _file_watcher:
         await _file_watcher.stop()
+    if _llm:
+        await _llm.aclose()
     await close_pool()
 
 
@@ -138,6 +140,46 @@ def _openwebui_utility(msg: str) -> Optional[str]:
     if "follow-up questions" in raw or '"follow_ups"' in raw:
         return json.dumps({"follow_ups": []})
     return None
+
+
+async def _condense_question(
+    messages: List[Dict[str, Any]],
+    last_user_msg: str,
+    llm: "LLMProvider",
+) -> Optional[str]:
+    """Rewrite last user message into a standalone question using prior history.
+
+    Returns None if there is no prior history or if condensation fails.
+    """
+    non_system = [m for m in messages if m.get("role") in ("user", "assistant")]
+    # Need at least 2 user turns to benefit from condensation
+    user_turns = [m for m in non_system if m.get("role") == "user"]
+    if len(user_turns) < 2:
+        return None
+    try:
+        # Last 3 turns excluding the final user message (already in last_user_msg)
+        prior = non_system[:-1][-6:]
+        history_lines = []
+        for m in prior:
+            role = "Kullanıcı" if m["role"] == "user" else "Asistan"
+            content = str(m.get("content") or "")
+            if isinstance(m.get("content"), list):
+                content = "\n".join(
+                    p.get("text", "") for p in m["content"] if isinstance(p, dict)
+                )
+            history_lines.append(f"{role}: {content[:500]}")
+        history_text = "\n".join(history_lines)
+        prompt = (
+            f"Sohbet geçmişi:\n{history_text}\n\n"
+            f"Son soru: {last_user_msg}\n\n"
+            "Sohbet geçmişini kullanarak son soruyu tek başına anlaşılır, bağımsız bir soruya dönüştür. "
+            "Sadece yeniden yazılmış soruyu yaz."
+        )
+        condensed = await llm.generate(prompt)
+        condensed = condensed.strip()
+        return condensed if condensed else None
+    except Exception:
+        return None
 
 
 @app.get("/", tags=["Health"])
@@ -342,24 +384,28 @@ async def openai_chat_completions(request: Request):
     if utility is not None:
         return _build_response(utility, model)
 
+    # Condense follow-up questions into standalone queries
+    llm = _require_llm()
+    condensed = await _condense_question(messages, user_message, llm)
+    question = condensed if condensed else user_message
+
     if model == "coiltech-router":
         return await _handle_router_request(
-            user_message, messages, stream, tenant_id, user_id
+            question, messages, stream, tenant_id, user_id
         )
 
     collection = collection_name or settings.OPENWEBUI_DEFAULT_COLLECTION
 
     if stream:
         async def gen():
-            from backend.rag.retrieval.query_engine import retrieve_context
             prompt, sources = await rag._retrieve(
-                question=user_message,
+                question=question,
                 collection=collection,
                 tenant_id=tenant_id,
                 user_id=user_id,
             )
             cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
-            async for token in _llm.generate_stream(prompt, model=model):
+            async for token in llm.generate_stream(prompt, model=model):
                 chunk = {
                     "id": cid,
                     "object": "chat.completion.chunk",
@@ -380,7 +426,7 @@ async def openai_chat_completions(request: Request):
         return StreamingResponse(gen(), media_type="text/event-stream")
 
     result = await rag.query(
-        question=user_message,
+        question=question,
         collection=collection,
         tenant_id=tenant_id,
         user_id=user_id,
