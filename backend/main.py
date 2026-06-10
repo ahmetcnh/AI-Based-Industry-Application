@@ -190,6 +190,38 @@ async def root():
 from backend.answer_cache import cache_lookup as _ac_lookup, cache_store as _ac_store
 
 
+def _build_citation_chunk(sources: list, cid: str, model: str) -> str:
+    """Build an Open WebUI-compatible citation SSE chunk."""
+    seen = {}
+    for s in sources:
+        meta = s.get("metadata") or {}
+        if isinstance(meta, str):
+            try:
+                meta = json.loads(meta)
+            except Exception:
+                meta = {}
+        name = meta.get("source") or meta.get("title") or "unknown"
+        if name not in seen:
+            seen[name] = s.get("content", "")
+    owui_sources = [
+        {
+            "source": {"name": name},
+            "document": [content],
+            "metadata": [{"source": name}],
+        }
+        for name, content in seen.items()
+    ]
+    chunk = {
+        "id": cid,
+        "object": "chat.completion.chunk",
+        "created": int(datetime.now(timezone.utc).timestamp()),
+        "model": model,
+        "choices": [{"index": 0, "delta": {"content": ""}, "finish_reason": None}],
+        "sources": owui_sources,
+    }
+    return f"data: {json.dumps(chunk)}\n\n"
+
+
 async def _cache_lookup(pool, llm, question, tenant_id, user_id, collection):
     if not settings.ANSWER_CACHE_ENABLED:
         return None
@@ -377,6 +409,8 @@ async def _handle_router_request(
                     "choices": [{"index": 0, "delta": {"content": token}, "finish_reason": None}],
                 }
                 yield f"data: {json.dumps(chunk)}\n\n"
+            if sources:
+                yield _build_citation_chunk(sources, cid, "coiltech-router")
             done = {
                 "id": cid,
                 "object": "chat.completion.chunk",
@@ -401,7 +435,10 @@ async def _handle_router_request(
     )
     await _cache_store(_pool, llm, user_message, result["answer"],
                        result.get("sources", []), tenant_id, user_id, collection)
-    return _build_response(routing_label + result["answer"], "coiltech-router")
+    response = _build_response(routing_label + result["answer"], "coiltech-router")
+    response_data = json.loads(response.body)
+    response_data["sources"] = result.get("sources", [])
+    return JSONResponse(response_data)
 
 
 @app.post("/v1/chat/completions", tags=["OpenAI Compatibility"])
@@ -473,6 +510,8 @@ async def openai_chat_completions(request: Request):
                     "choices": [{"index": 0, "delta": {"content": token}, "finish_reason": None}],
                 }
                 yield f"data: {json.dumps(chunk)}\n\n"
+            if sources:
+                yield _build_citation_chunk(sources, cid, model)
             done = {
                 "id": cid,
                 "object": "chat.completion.chunk",
@@ -496,7 +535,10 @@ async def openai_chat_completions(request: Request):
     )
     await _cache_store(_pool, llm, question, result["answer"],
                        result.get("sources", []), tenant_id, user_id, collection)
-    return _build_response(result["answer"], model)
+    response = _build_response(result["answer"], model)
+    response_data = json.loads(response.body)
+    response_data["sources"] = result.get("sources", [])
+    return JSONResponse(response_data)
 
 
 def _build_response(content: str, model: str) -> JSONResponse:
