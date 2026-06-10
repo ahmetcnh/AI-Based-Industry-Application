@@ -1,0 +1,102 @@
+[
+  {
+    "id": 1,
+    "question": "Transfer hattında ASI toprak hatası alınıyor. Sorun ne olabilir ve nasıl çözülür?",
+    "keywords": ["modül", "kablo", "adres", "toprak", "reset"]
+  },
+  {
+    "id": 2,
+    "question": "DT35 sensörü takıldıktan sonra makine yeşile alındı fakat otomatik modda sür sinyali verilemiyor. Ne yapılmalı?",
+    "keywords": ["sensör", "sinyal", "otomatik", "mod"]
+  },
+  {
+    "id": 3,
+    "question": "ASI hab hatası alınıyor ve adresler çift girilmiş. Nasıl düzeltilir?",
+    "keywords": ["adres", "ASI", "hab", "çift"]
+  },
+  {
+    "id": 4,
+    "question": "Transfer barda dönme sorunu ve hava kaçağı var. Çözüm nedir?",
+    "keywords": ["hava", "kaçak", "bar", "dönme"]
+  },
+  {
+    "id": 5,
+    "question": "Yaylarda sorun var ve oransal basınç kontrol valfi arızalı. Ne yapılmalı?",
+    "keywords": ["basınç", "valf", "değiştirildi", "oransal"]
+  },
+  {
+    "id": 6,
+    "question": "Smart Line güç modülü arızalandı. Nasıl değiştirilir?",
+    "keywords": ["güç modülü", "smart line", "takıldı", "devreye"]
+  },
+  {
+    "id": 7,
+    "question": "Destacker transfer arasındaki servo konveyörde bir bant diğerinden hızlı ilerliyor. Sebep nedir?",
+    "keywords": ["bant", "rulman", "dişli", "tahrik", "hız"]
+  },
+  {
+    "id": 8,
+    "question": "Otomatik modda sac sürme gerçekleşmiyor ve durma oluyor. Çözüm nedir?",
+    "keywords": ["kablo", "sensör", "bağlantı", "otomatik"]
+  },
+  {
+    "id": 9,
+    "question": "Sürmede problem yaşanmakta. Nasıl giderildi?",
+    "keywords": ["tunik", "sorun", "giderildi"]
+  },
+  {
+    "id": 10,
+    "question": "Çıkış barındaki gripper sensörlerin elektriksel bağlantıları yapılmamış. Ne yapılmalı?",
+    "keywords": ["gripper", "soket", "bağlantı", "sensör"]
+  },
+  {
+    "id": 11,
+    "question": "Destacker'da vakum hatasına düşüyor ve yanlış hareket yapıyor. Sebep nedir?",
+    "keywords": ["vakum", "hava kaçağı", "sensör"]
+  },
+  {
+    "id": 12,
+    "question": "CE belgelendirme sürecinde makinenin güvenlik kontrollerinde nelere dikkat edilmeli?",
+    "keywords": ["acil", "ışık bariyeri", "kapı", "güvenlik", "belgelendirme"]
+  },
+  {
+    "id": 13,
+    "question": "Robot kurulumunda yazılım yüklemesi ve vakum ayarları nasıl yapılır?",
+    "keywords": ["yazılım", "vakum", "ayar", "parça"]
+  },
+  {
+    "id": 14,
+    "question": "KDO mili değişimi sırasında stoper takılması nasıl yapılır?",
+    "keywords": ["kdo", "mili", "stoper", "takıldı"]
+  },
+  {
+    "id": 15,
+    "question": "Reçete yükle butonuna basınca panel kapanıp açılıyor. Uzak bağlantı kurulamıyor. Sorun nedir?",
+    "keywords": ["internet", "bağlantı", "reçete", "panel"]
+  },
+  {
+    "id": 16,
+    "question": "Açıcı bazen ters dönüyor ve faz sırası hatası ile servo 3100 hatası geliyor. Sebep ve çözüm nedir?",
+    "keywords": ["faz", "kontaktör", "kablo", "servo", "hız"]
+  },
+  {
+    "id": 17,
+    "question": "Pres ve rollform arasındaki loop kontrolü nasıl devreye alınır?",
+    "keywords": ["loop", "kontrol", "sensör", "devreye"]
+  },
+  {
+    "id": 18,
+    "question": "Makine kurulumunda açıcı, dogrultma ve sürücü nasıl konumlandırılır ve hizalanır?",
+    "keywords": ["hizalama", "kurulum", "açıcı", "dogrultma", "sürücü"]
+  },
+  {
+    "id": 19,
+    "question": "Transfer makinesinde arka barda verilen M8 valf soketi bağlantısı kesildi. Nasıl giderildi?",
+    "keywords": ["valf", "soket", "sinyal", "takıldı", "değiştirildi"]
+  },
+  {
+    "id": 20,
+    "question": "Giyotin makas arızası durumunda nasıl uzaktan bağlantı yapılır ve izleme nasıl gerçekleştirilir?",
+    "keywords": ["giyotin", "makas", "uzak bağlantı", "izleme"]
+  }
+]
