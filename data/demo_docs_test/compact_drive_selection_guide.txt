@@ -1,0 +1,8 @@
+Compact Drive Selection Guide
+
+CD-300 is intended for compact feed lines up to 300 mm strip width, 3.0 mm mild steel,
+and 35 m/min line speed. Typical applications include appliance panels and medium-size stampings.
+
+CD-600 is recommended when the customer needs higher coil weight, wider strip, and servo feed
+accuracy under fast die change conditions. Standard scope includes hydraulic decoiler interface,
+loop control, pilot release, and feed roll wear monitoring.

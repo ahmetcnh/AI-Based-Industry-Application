@@ -51,7 +51,11 @@ services:
       OPENAI_API_KEY: unused
       OLLAMA_BASE_URL: ""
       ENABLE_OLLAMA_API: "false"
-      WEBUI_AUTH: "false"
+      WEBUI_AUTH: "true"
+      ENABLE_SIGNUP: "true"
+      DEFAULT_USER_ROLE: "admin"
+      USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: "true"
+      ENABLE_MODEL_FILTER: "false"
     volumes:
       - openwebui_data:/app/backend/data
 
