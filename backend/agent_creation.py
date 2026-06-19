@@ -134,16 +134,25 @@ async def upsert_agent_for_collection(
     creation upgrades it in place instead of adding a near-duplicate the router
     would have to disambiguate.
     """
-    name = name or collection.replace("_", " ").title() + "Bot"
+    meta = _COLLECTION_META.get(collection, {})
+    name = name or meta.get("name") or collection.replace("_", " ").title() + "Bot"
     system_prompt = (
-        f"Sen Coiltech {name} uzmanısın. "
-        + (f"Görevin: {role}. " if role else "")
-        + f"Yalnızca {collection} koleksiyonundaki belgelerden cevap ver. "
-        f"Cevaplarını Türkçe ver."
+        meta.get("system_prompt")
+        or (
+            f"Sen Coiltech {name} uzmanısın. "
+            + (f"Görevin: {role}. " if role else "")
+            + f"Yalnızca {collection} koleksiyonundaki belgelerden cevap ver. "
+            f"Cevaplarını Türkçe ver."
+        )
     )
+    if role:
+        system_prompt = f"Görevin: {role}. " + system_prompt
+    # Use the rich routing description for the embedding so the router can
+    # match user questions to this agent with the same quality as built-in agents.
+    routing_description = meta.get("routing_description") or f"{name}. {system_prompt[:300]}"
     async with pool.acquire() as conn:
         existing = await conn.fetchrow(
-            "SELECT id FROM agents WHERE collection=$1 AND tenant_id=$2 AND user_id=$3 "
+            "SELECT id FROM agents WHERE collection=$1 AND tenant_id=$2 AND (user_id=$3 OR user_id=1) "
             "AND type='chatbot' LIMIT 1",
             collection, tenant_id, user_id,
         )
@@ -161,16 +170,15 @@ async def upsert_agent_for_collection(
                 settings.DEFAULT_MODEL, collection,
             )
             agent_id = row["id"]
-        emb_text = (
-            f"{name}. "
-            + (f"{role}. " if role else "")
-            + f"{collection.replace('_', ' ')}. {system_prompt[:200]}"
-        )
-        emb = await llm.get_embedding(emb_text)
-        emb_str = "[" + ",".join(str(v) for v in emb) + "]"
-        await conn.execute(
-            "UPDATE agents SET embedding=$1::vector WHERE id=$2", emb_str, agent_id
-        )
+        emb_text = routing_description
+        try:
+            emb = await llm.get_embedding(emb_text)
+            emb_str = "[" + ",".join(str(v) for v in emb) + "]"
+            await conn.execute(
+                "UPDATE agents SET embedding=$1::vector WHERE id=$2", emb_str, agent_id
+            )
+        except Exception as emb_err:
+            logger.warning("Agent embedding unavailable (LLM down?), agent created without vector", error=str(emb_err))
 
     write_definition_file(
         settings.AGENTS_STORE_DIR,
@@ -188,6 +196,136 @@ async def upsert_agent_for_collection(
         pass
     logger.info("Agent upserted from chat request", name=name, collection=collection)
     return {"id": agent_id, "name": name, "collection": collection}
+
+
+# Turkish name + routing description for known collections (mirrors department_agents.py)
+_COLLECTION_META: Dict[str, Dict[str, str]] = {
+    "special_projects": {
+        "name": "Özel Projeler",
+        "system_prompt": (
+            "Sen Coiltech özel projeler ve referans portföy uzmanısın. Müşteriye özel "
+            "mühendislik projeleri, tamamlanan referans projeler (Kardemir, Ford Otosan, "
+            "Erdemir vb.), turnkey çözümler ve özel makine tasarımları hakkında "
+            "Türkçe cevap verirsin."
+        ),
+        "routing_description": (
+            "Özel müşteri projeleri ve referans proje portföyü. Müşteriye özel tasarım, "
+            "turnkey çözüm, anahtar teslim proje, özel mühendislik projesi, referans proje, "
+            "geçmiş projeler, tamamlanan projeler, müşteri referansı. "
+            "Kardemir modernizasyon, Ford Otosan pres hattı, Erdemir servis hattı gibi "
+            "gerçekleştirilmiş endüstriyel projeler. Portföy, müşteri spesifik çözüm. "
+            "Örnek sorular: daha önce hangi müşteriler için özel proje yapıldı, "
+            "referans projeler neler, turnkey proje kapsamı nedir, bu projeyle ilgili bilgi ver."
+        ),
+    },
+    "spare_parts": {
+        "name": "Yedek Parça",
+        "system_prompt": "Sen Coiltech yedek parça uzmanısın. Parça numaraları, stok durumu ve bakım malzemeleri hakkında Türkçe cevap verirsin.",
+        "routing_description": "Yedek parça, spare part, parça numarası, stok, yedek parça siparişi.",
+    },
+    "installation_commissioning": {
+        "name": "Kurulum ve Devreye Alma",
+        "system_prompt": "Sen Coiltech kurulum ve devreye alma uzmanısın. Montaj talimatları ve devreye alma prosedürleri hakkında Türkçe cevap verirsin.",
+        "routing_description": "Kurulum, devreye alma, installation, commissioning, montaj talimatı, startup.",
+    },
+    "quality_documents": {
+        "name": "Kalite ve Uyumluluk",
+        "system_prompt": "Sen Coiltech kalite belgeleri uzmanısın. CE belgeleri, sertifikalar ve uygunluk beyanları hakkında Türkçe cevap verirsin.",
+        "routing_description": "Kalite belgesi, CE belgesi, sertifika, uygunluk beyanı, test raporu.",
+    },
+    "sales_and_quotations": {
+        "name": "Satış ve Teklifler",
+        "system_prompt": "Sen Coiltech satış ve teklif uzmanısın. Fiyat teklifleri ve ticari teklifler hakkında Türkçe cevap verirsin.",
+        "routing_description": "Teklif, satış, fiyat, quotation, commercial, proposal, sipariş.",
+    },
+    "service_maintenance": {
+        "name": "Servis ve Bakım",
+        "system_prompt": "Sen Coiltech servis ve bakım uzmanısın. Arıza giderme, bakım prosedürleri ve onarım hakkında Türkçe cevap verirsin.",
+        "routing_description": "Bakım, servis, arıza, troubleshooting, alarm, onarım, maintenance.",
+    },
+}
+
+_COLLECTION_DESCRIPTIONS = {
+    "special_projects":          "Özel müşteri projeleri, referans projeler, portföy, turnkey çözüm, müşteriye özel tasarım",
+    "spare_parts":               "Yedek parça, spare part, parça numarası, stok, bakım malzemesi",
+    "installation_commissioning":"Kurulum, devreye alma, installation, commissioning, montaj talimatı",
+    "quality_documents":         "Kalite belgesi, CE belgesi, sertifika, uygunluk beyanı, test raporu",
+    "sales_and_quotations":      "Teklif, satış, fiyat, quotation, commercial, proposal",
+    "service_maintenance":       "Bakım, servis, arıza, troubleshooting, alarm, onarım, maintenance",
+    "products_compact_drives":   "Compact drive, pres besleme sistemi, compact besleme",
+    "products_loop_drives":      "Loop drive, loop tipi besleme",
+    "products_blank_lines":      "Blank line, blanking hattı, sac kesim",
+    "products_destacker":        "Destacker, yığın çözücü",
+    "products_press_transfer_robots": "Transfer robot, pres transfer robotu",
+    "products_press_transfer":   "Press transfer, transfer sistemi",
+    "products_servo_drives":     "Servo drive, servo besleme, zigzag, triggered",
+    "products_decoilers":        "Decoiler, uncoiler, mandrel, açıcı",
+    "products_ctl_lines":        "Cut to length, CTL, makas hattı, kesme hattı",
+    "general":                   "Genel, sınıflandırılamayan, diğer",
+}
+
+
+async def detect_collection_from_content(
+    pool,
+    llm,
+    document_id: int,
+    tenant_id: int,
+    user_id: int,
+    default_collection: str = "general",
+) -> str:
+    """Read the first few chunks of a document and use LLM to classify its collection."""
+    try:
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                """SELECT content FROM chunks
+                   WHERE document_id=$1 AND tenant_id=$2 AND user_id=$3
+                   ORDER BY id LIMIT 5""",
+                document_id, tenant_id, user_id,
+            )
+            # When the same file was uploaded before, new upload has 0 chunks (already_ingested).
+            # Fall back: find chunks from any document with the same base filename (strip UUID prefix).
+            if not rows:
+                filename_row = await conn.fetchrow(
+                    "SELECT original_filename FROM documents WHERE id=$1", document_id
+                )
+                if filename_row:
+                    fname = filename_row["original_filename"] or ""
+                    # Strip leading UUID/hash prefix (e.g. "abc123_ozel.pdf" -> "ozel.pdf")
+                    import re as _re
+                    base = _re.sub(r'^[0-9a-f\-]{8,}_', '', fname)
+                    if base and base != fname:
+                        rows = await conn.fetch(
+                            """SELECT c.content FROM chunks c
+                               JOIN documents d ON d.id = c.document_id
+                               WHERE d.original_filename ILIKE $1
+                                 AND c.tenant_id=$2
+                               ORDER BY c.id LIMIT 5""",
+                            f"%{base}", tenant_id,
+                        )
+        if not rows:
+            return default_collection
+
+        sample_text = "\n\n---\n\n".join(r["content"] for r in rows)[:3000]
+        options = "\n".join(
+            f"- {key}: {desc}" for key, desc in _COLLECTION_DESCRIPTIONS.items()
+        )
+        prompt = (
+            "Aşağıdaki belge içeriğine bakarak, bu belgenin hangi koleksiyona ait olduğunu belirle.\n\n"
+            f"Koleksiyon seçenekleri:\n{options}\n\n"
+            f"Belge içeriği:\n{sample_text}\n\n"
+            "Yalnızca koleksiyon anahtar adını yaz (örn: special_projects). Başka hiçbir şey yazma."
+        )
+        result = await llm.generate(prompt)
+        key = result.strip().lower().split()[0] if result.strip() else ""
+        key = key.strip(".,;:\"'")
+        if key in _COLLECTION_DESCRIPTIONS:
+            logger.info("Content-based collection detected", document_id=document_id, collection=key)
+            return key
+        logger.warning("LLM returned unknown collection key", raw=result.strip())
+        return default_collection
+    except Exception as e:
+        logger.warning("Content-based collection detection failed", error=str(e))
+        return default_collection
 
 
 async def find_recent_document(
@@ -259,6 +397,23 @@ async def fulfill_pending_after_ingest(
         params = row["params"]
         if isinstance(params, str):
             params = json.loads(params or "{}")
+        # Detect the collection from the document's actual content rather than
+        # relying on the filename-based assignment from the ingest pipeline.
+        async with pool.acquire() as conn:
+            doc_id = await conn.fetchval(
+                """SELECT id FROM documents
+                   WHERE tenant_id=$1 AND user_id=$2
+                   ORDER BY created_at DESC LIMIT 1""",
+                tenant_id, user_id,
+            )
+        if doc_id:
+            collection = await detect_collection_from_content(
+                pool, llm,
+                document_id=doc_id,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                default_collection=collection,
+            )
         agent = await upsert_agent_for_collection(
             pool, llm, settings,
             collection=collection,

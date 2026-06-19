@@ -1,3 +1,4 @@
+import asyncio
 import json
 from collections import OrderedDict
 from typing import AsyncIterator, Dict, Any, List, Optional
@@ -51,8 +52,14 @@ async def _ollama_generate(
         yield resp.json().get("message", {}).get("content", "")
 
 
-async def _deepseek_generate(
+DEEPSEEK_CHAT_URL = "https://api.deepseek.com/chat/completions"
+# Gemini exposes an OpenAI-compatible endpoint; same payload shape as DeepSeek.
+GEMINI_CHAT_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
+
+
+async def _openai_compat_generate(
     client: httpx.AsyncClient,
+    url: str,
     api_key: str,
     model: str,
     messages: list,
@@ -63,7 +70,7 @@ async def _deepseek_generate(
     payload = {"model": model, "messages": messages, "stream": stream}
     if stream:
         async with client.stream(
-            "POST", "https://api.deepseek.com/chat/completions",
+            "POST", url,
             json=payload, headers=headers, timeout=timeout,
         ) as resp:
             resp.raise_for_status()
@@ -77,12 +84,20 @@ async def _deepseek_generate(
                     except (json.JSONDecodeError, KeyError):
                         continue
     else:
-        resp = await client.post(
-            "https://api.deepseek.com/chat/completions",
-            json=payload, headers=headers, timeout=timeout,
-        )
-        resp.raise_for_status()
-        yield resp.json()["choices"][0]["message"]["content"]
+        # One quick retry on 429, then give up so the caller can fall back
+        # to the local Ollama model instead of stalling for 60s+.
+        for attempt in range(2):
+            resp = await client.post(
+                url,
+                json=payload, headers=headers, timeout=timeout,
+            )
+            if resp.status_code == 429 and attempt < 1:
+                logger.warning("API rate limited, retrying once", wait_s=5)
+                await asyncio.sleep(5)
+                continue
+            resp.raise_for_status()
+            yield resp.json()["choices"][0]["message"]["content"]
+            return
 
 
 class LLMProvider:
@@ -105,13 +120,20 @@ class LLMProvider:
         return msgs
 
     def _parse_model_id(self, model_id: Optional[str]) -> tuple:
-        model_id = model_id or f"ollama:{self.settings.OLLAMA_GENERATION_MODEL}"
+        if model_id == "default":
+            model_id = None
+        model_id = model_id or self.settings.DEFAULT_MODEL \
+            or f"ollama:{self.settings.OLLAMA_GENERATION_MODEL}"
         if model_id.startswith("ollama:"):
             return "ollama", model_id[7:]
         if model_id in self.settings.deepseek_models_list:
             return "deepseek", model_id
         if model_id.startswith("deepseek"):
             return "deepseek", model_id
+        if model_id in self.settings.gemini_models_list:
+            return "gemini", model_id
+        if model_id.startswith("gemini"):
+            return "gemini", model_id
         return "ollama", model_id
 
     async def generate(
@@ -119,16 +141,37 @@ class LLMProvider:
         prompt: str,
         system_prompt: Optional[str] = None,
         model: Optional[str] = None,
+        skip_ollama_fallback: bool = False,
     ) -> str:
         provider, model_name = self._parse_model_id(model)
         messages = self._build_messages(prompt, system_prompt)
         result = ""
         if provider == "deepseek" and self.settings.DEEPSEEK_API_KEY:
-            async for chunk in _deepseek_generate(
-                self._client, self.settings.DEEPSEEK_API_KEY, model_name, messages,
-                False, self.settings.OLLAMA_TIMEOUT
+            async for chunk in _openai_compat_generate(
+                self._client, DEEPSEEK_CHAT_URL, self.settings.DEEPSEEK_API_KEY,
+                model_name, messages, False, self.settings.OLLAMA_TIMEOUT
             ):
                 result += chunk
+        elif provider == "gemini" and self.settings.GEMINI_API_KEY:
+            try:
+                async for chunk in _openai_compat_generate(
+                    self._client, GEMINI_CHAT_URL, self.settings.GEMINI_API_KEY,
+                    model_name, messages, False, self.settings.OLLAMA_TIMEOUT
+                ):
+                    result += chunk
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code != 429:
+                    raise
+                if skip_ollama_fallback:
+                    raise
+                logger.warning("gemini_429_fallback_ollama", model=model_name)
+                result = ""
+                async for chunk in _ollama_generate(
+                    self._client, self.settings.OLLAMA_BASE_URL,
+                    self.settings.OLLAMA_GENERATION_MODEL, messages,
+                    False, self.settings.OLLAMA_TIMEOUT
+                ):
+                    result += chunk
         else:
             async for chunk in _ollama_generate(
                 self._client, self.settings.OLLAMA_BASE_URL, model_name, messages,
@@ -142,15 +185,39 @@ class LLMProvider:
         prompt: str,
         system_prompt: Optional[str] = None,
         model: Optional[str] = None,
+        skip_ollama_fallback: bool = False,
     ) -> AsyncIterator[str]:
         provider, model_name = self._parse_model_id(model)
         messages = self._build_messages(prompt, system_prompt)
         if provider == "deepseek" and self.settings.DEEPSEEK_API_KEY:
-            async for chunk in _deepseek_generate(
-                self._client, self.settings.DEEPSEEK_API_KEY, model_name, messages,
-                True, self.settings.OLLAMA_TIMEOUT
+            async for chunk in _openai_compat_generate(
+                self._client, DEEPSEEK_CHAT_URL, self.settings.DEEPSEEK_API_KEY,
+                model_name, messages, True, self.settings.OLLAMA_TIMEOUT
             ):
                 yield chunk
+        elif provider == "gemini" and self.settings.GEMINI_API_KEY:
+            emitted = False
+            try:
+                async for chunk in _openai_compat_generate(
+                    self._client, GEMINI_CHAT_URL, self.settings.GEMINI_API_KEY,
+                    model_name, messages, True, self.settings.OLLAMA_TIMEOUT
+                ):
+                    emitted = True
+                    yield chunk
+            except httpx.HTTPStatusError as e:
+                # 429 raises before any chunk is streamed; if nothing was
+                # emitted yet we can transparently restart on local Ollama.
+                if e.response.status_code != 429 or emitted:
+                    raise
+                if skip_ollama_fallback:
+                    raise
+                logger.warning("gemini_429_fallback_ollama", model=model_name)
+                async for chunk in _ollama_generate(
+                    self._client, self.settings.OLLAMA_BASE_URL,
+                    self.settings.OLLAMA_GENERATION_MODEL, messages,
+                    True, self.settings.OLLAMA_TIMEOUT
+                ):
+                    yield chunk
         else:
             async for chunk in _ollama_generate(
                 self._client, self.settings.OLLAMA_BASE_URL, model_name, messages,

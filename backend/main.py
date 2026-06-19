@@ -11,7 +11,7 @@ import httpx
 import structlog
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from backend.settings import get_settings
 from backend.db import init_pool, close_pool, init_schema
@@ -63,6 +63,17 @@ async def lifespan(app: FastAPI):
         await ensure_sql_agent(_pool, _llm, settings)
     except Exception as e:
         logger.warning("SQL agent setup failed", error=str(e))
+    try:
+        from backend.department_agents import ensure_department_agents
+        await ensure_department_agents(_pool, _llm, settings)
+    except Exception as e:
+        logger.warning("Department agent setup failed", error=str(e))
+    try:
+        from backend.digital_twin import ensure_digital_twin_agent, resolve_public_base_url
+        resolve_public_base_url(settings)
+        await ensure_digital_twin_agent(_pool, _llm, settings)
+    except Exception as e:
+        logger.warning("Digital twin agent setup failed", error=str(e))
 
     if settings.OPENWEBUI_WATCH_ENABLED:
         try:
@@ -108,6 +119,22 @@ app.add_middleware(
 app.include_router(tenants_router)
 app.include_router(agents_router)
 app.include_router(chats_router)
+
+_DASHBOARD_DIR = os.path.join(os.path.dirname(__file__), "static", "dashboard")
+_DASHBOARD_HTML = os.path.join(_DASHBOARD_DIR, "index.html")
+
+
+@app.get("/dashboard", tags=["Digital Twin"])
+async def dashboard():
+    if not os.path.exists(_DASHBOARD_HTML):
+        raise HTTPException(status_code=503, detail="Dashboard not found")
+    return FileResponse(_DASHBOARD_HTML, media_type="text/html")
+
+
+@app.get("/api/digital-twin/status", tags=["Digital Twin"])
+async def digital_twin_status():
+    from backend.digital_twin import get_status
+    return JSONResponse(get_status())
 
 
 def _require_rag() -> RAGPipeline:
@@ -232,21 +259,57 @@ async def _handle_agent_creation(
 ):
     """User asked to create an agent: bind to a just-uploaded file, or warn and wait."""
     llm = _require_llm()
-    # A file attached to this same message may not be ingested yet; scan now.
-    if _file_watcher:
+
+    params = await agent_creation.extract_params(user_message, llm)
+    # Check for an explicitly-uploaded document first (API /upload path).
+    doc = await agent_creation.find_recent_document(
+        _pool, tenant_id=tenant_id, user_id=user_id
+    )
+    # If nothing found yet, trigger file-watcher scan (Open WebUI attachment path)
+    # and try once more.
+    if not doc and _file_watcher:
         try:
             await _file_watcher.scan_now()
         except Exception as e:
             logger.warning("On-demand scan failed", error=str(e))
-
-    params = await agent_creation.extract_params(user_message, llm)
-    doc = await agent_creation.find_recent_document(
-        _pool, tenant_id=tenant_id, user_id=user_id
-    )
+        doc = await agent_creation.find_recent_document(
+            _pool, tenant_id=tenant_id, user_id=user_id
+        )
     if doc:
+        # Always detect collection from PDF content, not from the filename-based
+        # ingest assignment. This ensures the agent maps to the correct collection
+        # regardless of how the file was named.
+        collection = await agent_creation.detect_collection_from_content(
+            _pool, llm,
+            document_id=doc["id"],
+            tenant_id=tenant_id,
+            user_id=user_id,
+            default_collection=doc["rag_collection"],
+        )
+        # If detected collection differs from stored one, migrate chunks + documents
+        # so that RAG queries on the new collection actually find the content.
+        if collection != doc["rag_collection"]:
+            try:
+                async with _pool.acquire() as _conn:
+                    await _conn.execute(
+                        """UPDATE chunks SET collection=$1
+                           WHERE document_id IN (
+                               SELECT id FROM documents
+                               WHERE original_filename=$2 AND tenant_id=$3
+                           )""",
+                        collection, doc["original_filename"], tenant_id,
+                    )
+                    await _conn.execute(
+                        "UPDATE documents SET rag_collection=$1 WHERE original_filename=$2 AND tenant_id=$3",
+                        collection, doc["original_filename"], tenant_id,
+                    )
+                logger.info("Migrated chunks to detected collection",
+                            from_col=doc["rag_collection"], to_col=collection)
+            except Exception as _e:
+                logger.warning("Chunk migration failed", error=str(_e))
         agent = await agent_creation.upsert_agent_for_collection(
             _pool, llm, settings,
-            collection=doc["rag_collection"],
+            collection=collection,
             name=params.get("name"),
             role=params.get("role"),
             source_file=doc.get("original_filename"),
@@ -352,6 +415,8 @@ async def openai_models():
             models.append({"id": f"ollama:{m}", "object": "model", "created": created, "owned_by": "ollama"})
         for m in settings.deepseek_models_list:
             models.append({"id": m, "object": "model", "created": created, "owned_by": "deepseek"})
+        for m in settings.gemini_models_list:
+            models.append({"id": m, "object": "model", "created": created, "owned_by": "google"})
         if _pool:
             from backend.db import get_pool
             pool = await get_pool()
@@ -492,13 +557,52 @@ async def _handle_router_request(
     tenant_id: int,
     user_id: int,
     prefix: str = "",
+    original_question: Optional[str] = None,
 ):
     rag = _require_rag()
     llm = _require_llm()
     agent = None
-    if _router:
+
+    # If the last assistant turn came from Dijital İkiz AND the current question
+    # looks like a live-status follow-up, pin routing to that agent.
+    # Only pin when the message references machines, live metrics, or real-time state —
+    # not for unrelated questions that happen to follow a DT response.
+    _DT_FOLLOWUP_PATTERN = re.compile(
+        r"\b(ctl[-\s]?\d+|ptr[-\s]?\d+|ack[-\s]?\d+|dst[-\s]?\d+|sbl[-\s]?\d+|lsd[-\s]?\d+"
+        r"|su\s*an|simdiki|anlik|sicakl|basinc|oee|alarm|calis[iy]|durdu|bekle"
+        r"|makine\s*durumu|sensor|vardiya|uretim\s*say|hiz\s*kac)\b",
+        re.IGNORECASE,
+    )
+    _last_assistant = next(
+        (m for m in reversed(messages) if m.get("role") == "assistant"), None
+    )
+    _last_was_dt = _last_assistant and "Dijital İkiz" in str(
+        _last_assistant.get("content", "")
+    )
+
+    if _last_was_dt and _router:
+        _q_for_dt_check = original_question if original_question else user_message
+        _q_norm = _q_for_dt_check.translate(str.maketrans("ıİşŞğĞüÜöÖçÇ", "iIsSgGuUoOcC")).lower()
+        if _DT_FOLLOWUP_PATTERN.search(_q_norm):
+            try:
+                async with _router.pool.acquire() as _conn:
+                    _row = await _conn.fetchrow(
+                        "SELECT id, name, system_prompt, model, collection, type, embedding "
+                        "FROM agents WHERE name='Dijital İkiz' AND tenant_id=$1 AND user_id=$2 LIMIT 1",
+                        tenant_id, user_id,
+                    )
+                    if _row:
+                        agent = dict(_row)
+                        logger.info("Follow-up pinned to Dijital İkiz")
+            except Exception as e:
+                logger.warning("DT follow-up pin failed", error=str(e))
+
+    if agent is None and _router:
+        # Route on the ORIGINAL question so condensed context (e.g. "CTL-01 enkoder...")
+        # doesn't pull an unrelated question toward Dijital İkiz.
+        _route_question = original_question if original_question else user_message
         try:
-            agent = await _router.route(user_message, tenant_id=tenant_id, user_id=user_id)
+            agent = await _router.route(_route_question, tenant_id=tenant_id, user_id=user_id)
         except Exception as e:
             logger.warning("Router failed, using default collection", error=str(e))
 
@@ -507,28 +611,39 @@ async def _handle_router_request(
     agent_system_prompt = agent["system_prompt"] if agent else None
     routing_label = prefix + (f"[→ {agent['name']}]\n\n" if agent else "")
 
-    # Cache lookup for router path
-    cached = await _cache_lookup(_pool, llm, user_message, tenant_id, user_id, collection)
-    if cached:
-        import time as _time; _t0 = _time.time()
-        if stream:
-            async def router_cached_gen():
-                cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
-                if routing_label:
-                    yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': routing_label}, 'finish_reason': None}]})}\n\n"
-                yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': cached['answer']}, 'finish_reason': None}]})}\n\n"
-                yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
-                yield "data: [DONE]\n\n"
-                await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
-            return StreamingResponse(router_cached_gen(), media_type="text/event-stream")
-        await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
-        return _build_response(routing_label + cached["answer"], "coiltech-router")
+    # Digital Twin answers are live data — never serve from cache.
+    is_digital_twin = agent and agent.get("type") == "digital_twin"
+
+    # Cache lookup for router path (skip for digital twin)
+    if not is_digital_twin:
+        cached = await _cache_lookup(_pool, llm, user_message, tenant_id, user_id, collection)
+        if cached:
+            import time as _time; _t0 = _time.time()
+            if stream:
+                async def router_cached_gen():
+                    cid = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+                    if routing_label:
+                        yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': routing_label}, 'finish_reason': None}]})}\n\n"
+                    yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {'content': cached['answer']}, 'finish_reason': None}]})}\n\n"
+                    yield f"data: {json.dumps({'id': cid, 'object': 'chat.completion.chunk', 'created': int(datetime.now(timezone.utc).timestamp()), 'model': 'coiltech-router', 'choices': [{'index': 0, 'delta': {}, 'finish_reason': 'stop'}]})}\n\n"
+                    yield "data: [DONE]\n\n"
+                    await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
+                return StreamingResponse(router_cached_gen(), media_type="text/event-stream")
+            await _log_cache_hit(_pool, user_message, collection, tenant_id, user_id, int((_time.time()-_t0)*1000))
+            return _build_response(routing_label + cached["answer"], "coiltech-router")
+
+    # Digital Twin agent: inject live sensor data into the system prompt.
+    if is_digital_twin:
+        from backend.digital_twin import build_agent_context, _SYSTEM_PROMPT as _dt_sysprompt
+        dt_context = build_agent_context()
+        agent_system_prompt = _dt_sysprompt() + "\n\n" + dt_context
 
     # SQL agent: answer from service_records via NL→SQL; on no rows / bad SQL
     # fall back to RAG over the default maintenance collection.
     sql_result = None
     if agent and agent.get("type") == "sql":
-        sql_result = await sql_agent_mod.try_sql_path(_pool, llm, user_message)
+        _sql_question = original_question if original_question else user_message
+        sql_result = await sql_agent_mod.try_sql_path(_pool, llm, _sql_question)
         if sql_result is None:
             logger.info("SQL path empty, falling back to RAG")
             collection = settings.OPENWEBUI_DEFAULT_COLLECTION
@@ -547,9 +662,13 @@ async def _handle_router_request(
                     "choices": [{"index": 0, "delta": {"content": routing_label}, "finish_reason": None}],
                 }
                 yield f"data: {json.dumps(label_chunk)}\n\n"
-            if sql_result:
+            if is_digital_twin:
+                prompt = f"{agent_system_prompt}\n\nKullanıcı sorusu: {user_message}"
+                sources = []
+                # stream with skip_ollama_fallback so 429 raises immediately
+            elif sql_result:
                 prompt = sql_agent_mod.build_summary_prompt(
-                    user_message, sql_result["rows"], agent_system_prompt
+                    _sql_question, sql_result["rows"], agent_system_prompt
                 )
                 sources = []
             else:
@@ -561,16 +680,36 @@ async def _handle_router_request(
                     system_prompt=agent_system_prompt,
                 )
             accumulated = []
-            async for token in llm.generate_stream(prompt, model=agent_model):
-                accumulated.append(token)
-                chunk = {
-                    "id": cid,
-                    "object": "chat.completion.chunk",
+            try:
+                async for token in llm.generate_stream(prompt, model=agent_model,
+                                                       skip_ollama_fallback=is_digital_twin):
+                    accumulated.append(token)
+                    chunk = {
+                        "id": cid,
+                        "object": "chat.completion.chunk",
+                        "created": int(datetime.now(timezone.utc).timestamp()),
+                        "model": "coiltech-router",
+                        "choices": [{"index": 0, "delta": {"content": token}, "finish_reason": None}],
+                    }
+                    yield f"data: {json.dumps(chunk)}\n\n"
+            except Exception as e:
+                err_str = str(e)
+                if is_digital_twin:
+                    from backend.digital_twin import build_direct_response
+                    msg = build_direct_response(user_message)
+                    logger.info("Digital twin LLM unavailable, using direct response")
+                elif "429" in err_str:
+                    msg = "Şu an yapay zeka servisine çok fazla istek gönderildi. Lütfen bir dakika bekleyip tekrar deneyin."
+                else:
+                    msg = f"Yanıt oluşturulurken bir hata oluştu."
+                    logger.error("Streaming LLM failed", error=err_str[:200])
+                err_chunk = {
+                    "id": cid, "object": "chat.completion.chunk",
                     "created": int(datetime.now(timezone.utc).timestamp()),
                     "model": "coiltech-router",
-                    "choices": [{"index": 0, "delta": {"content": token}, "finish_reason": None}],
+                    "choices": [{"index": 0, "delta": {"content": msg}, "finish_reason": None}],
                 }
-                yield f"data: {json.dumps(chunk)}\n\n"
+                yield f"data: {json.dumps(err_chunk)}\n\n"
             if sources:
                 yield _build_citation_chunk(sources, cid, "coiltech-router")
             done = {
@@ -583,27 +722,46 @@ async def _handle_router_request(
             yield f"data: {json.dumps(done)}\n\n"
             yield "data: [DONE]\n\n"
             full_answer = "".join(accumulated)
-            await _cache_store(_pool, llm, user_message, full_answer, sources,
-                               tenant_id, user_id, collection)
+            if full_answer and not is_digital_twin:
+                await _cache_store(_pool, llm, user_message, full_answer, sources,
+                                   tenant_id, user_id, collection)
         return StreamingResponse(gen(), media_type="text/event-stream")
 
-    if sql_result:
-        prompt = sql_agent_mod.build_summary_prompt(
-            user_message, sql_result["rows"], agent_system_prompt
-        )
-        answer = await llm.generate(prompt, model=agent_model)
-        result = {"answer": answer.strip(), "sources": []}
-    else:
-        result = await rag.query(
-            question=user_message,
-            collection=collection,
-            tenant_id=tenant_id,
-            user_id=user_id,
-            model=agent_model,
-            system_prompt=agent_system_prompt,
-        )
-    await _cache_store(_pool, llm, user_message, result["answer"],
-                       result.get("sources", []), tenant_id, user_id, collection)
+    try:
+        if is_digital_twin:
+            prompt = f"{agent_system_prompt}\n\nKullanıcı sorusu: {user_message}"
+            answer = await llm.generate(prompt, model=agent_model, skip_ollama_fallback=True)
+            result = {"answer": answer.strip(), "sources": []}
+        elif sql_result:
+            prompt = sql_agent_mod.build_summary_prompt(
+                _sql_question, sql_result["rows"], agent_system_prompt
+            )
+            answer = await llm.generate(prompt, model=agent_model)
+            result = {"answer": answer.strip(), "sources": []}
+        else:
+            result = await rag.query(
+                question=user_message,
+                collection=collection,
+                tenant_id=tenant_id,
+                user_id=user_id,
+                model=agent_model,
+                system_prompt=agent_system_prompt,
+            )
+    except Exception as e:
+        err_str = str(e)
+        if is_digital_twin:
+            from backend.digital_twin import build_direct_response
+            msg = build_direct_response(user_message)
+            logger.info("Digital twin LLM unavailable, using direct response")
+        elif "429" in err_str:
+            msg = "Şu an yapay zeka servisine çok fazla istek gönderildi. Lütfen bir dakika bekleyip tekrar deneyin."
+        else:
+            logger.error("LLM generate failed", error=err_str[:200])
+            msg = f"Yanıt oluşturulurken bir hata oluştu: {err_str[:100]}"
+        return _build_response(routing_label + msg, "coiltech-router")
+    if not is_digital_twin:
+        await _cache_store(_pool, llm, user_message, result["answer"],
+                           result.get("sources", []), tenant_id, user_id, collection)
     response = _build_response(routing_label + result["answer"], "coiltech-router")
     response_data = json.loads(response.body)
     response_data["sources"] = result.get("sources", [])
@@ -650,9 +808,10 @@ async def openai_chat_completions(request: Request):
     condensed = await _condense_question(messages, user_message, llm)
     question = condensed if condensed else user_message
 
-    if model == "coiltech-router":
+    if model in ("coiltech-router", "coiltech-rag", "default"):
         return await _handle_router_request(
-            question, messages, stream, tenant_id, user_id, prefix=confirm_prefix
+            question, messages, stream, tenant_id, user_id, prefix=confirm_prefix,
+            original_question=user_message,
         )
 
     # Virtual model ids (coiltech-rag, agent-*) are not real Ollama models;

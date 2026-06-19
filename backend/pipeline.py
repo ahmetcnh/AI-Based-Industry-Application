@@ -18,7 +18,8 @@ _KEYWORD_MAP = {
     "products_servo_drives": ["servo drive", "triggered", "zigzag"],
     "products_decoilers": ["decoiler", "uncoiler", "mandrel"],
     "products_ctl_lines": ["cut to length", "ctl", "shear", "stacker"],
-    "special_projects": ["special project", "custom", "layout", "rfq"],
+    "special_projects": ["special project", "custom", "layout", "rfq",
+                         "ozel_proje", "ozel proje", "portfoy", "special_project"],
     "installation_commissioning": ["commissioning", "installation", "startup"],
     "service_maintenance": ["service", "maintenance", "troubleshooting", "repair", "alarm"],
     "spare_parts": ["spare", "part", "replacement"],
@@ -97,16 +98,22 @@ class RAGPipeline:
         await self.maybe_create_agent(collection, tenant_id, user_id)
         return result
 
+    # Collections that should never auto-generate a shadow agent — they are
+    # either catch-all fallbacks or duplicates of known department agents.
+    _NO_AUTO_AGENT_COLLECTIONS = {"general", "quality", "service_maintenance"}
+
     async def maybe_create_agent(
         self,
         collection: str,
         tenant_id: int = 1,
         user_id: int = 1,
     ) -> None:
+        if collection in self._NO_AUTO_AGENT_COLLECTIONS:
+            return
         try:
             async with self.pool.acquire() as conn:
                 existing = await conn.fetchval(
-                    "SELECT id FROM agents WHERE collection=$1 AND tenant_id=$2 AND user_id=$3 LIMIT 1",
+                    "SELECT id FROM agents WHERE collection=$1 AND tenant_id=$2 AND (user_id=$3 OR user_id=1) LIMIT 1",
                     collection, tenant_id, user_id,
                 )
                 if existing:

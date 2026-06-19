@@ -1,0 +1,11 @@
+query,collection,relevant_chunk_ids,notes
+"CTL-01 makinesi hangi parametrelerle çalışıyor?",digital_twin,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%CTL-01%'"
+"Servo besleme ünitesinin maksimum kapasitesi nedir?",product_catalog,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%servo besleme%'"
+"Enkoder hatası nasıl giderilmiş?",service_maintenance,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%enkoder%'"
+"Yedek parça stok miktarı nasıl görüntülenir?",spare_parts,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%stok%'"
+"CE belgesi hangi standartta düzenleniyor?",quality_docs,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%CE%'"
+"Decoiler montaj adımları nelerdir?",installation,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%decoiler%montaj%'"
+"Son çeyrekte toplam arıza sayısı kaçtır?",management_report,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%çeyrek%arıza%'"
+"Proje milestone'ları nelerdir?",special_projects,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%milestone%'"
+"Fiyat teklifi için hangi bilgiler gerekiyor?",sales,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%fiyat teklifi%'"
+"OEE değeri nasıl hesaplanır?",digital_twin,"","Fill chunk IDs from SELECT id FROM chunks WHERE content ILIKE '%OEE%'"

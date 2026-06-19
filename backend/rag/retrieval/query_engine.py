@@ -17,6 +17,9 @@ _DEFAULT_SYSTEM_ROLE = (
 _ANSWER_PROMPT = """{system_role}
 Use the context below to answer the question. If the context is insufficient, say so clearly.
 Answer in {language}.
+In your answer, reuse the exact technical terms, component names and signal names
+that appear in the question and in the context (e.g. sensör, kablo, soket, valf,
+modül, adres) — do not replace them with generic paraphrases.
 
 CONTEXT:
 {context}

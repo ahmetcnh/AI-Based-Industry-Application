@@ -254,9 +254,14 @@ class TestParseModelId:
         assert provider == "ollama"
         assert name == "gemma3"
 
-    def test_default_model_is_ollama(self):
+    def test_default_model_follows_settings(self):
+        # None resolves to settings.DEFAULT_MODEL (gemini in prod, ollama if unset)
         provider, name = self.llm._parse_model_id(None)
-        assert provider == "ollama"
+        default = get_settings().DEFAULT_MODEL or ""
+        if default.startswith("gemini"):
+            assert provider == "gemini"
+        else:
+            assert provider == "ollama"
 
     def test_plain_model_name_is_ollama(self):
         provider, name = self.llm._parse_model_id("llama3")
@@ -266,6 +271,184 @@ class TestParseModelId:
     def test_deepseek_prefix(self):
         provider, name = self.llm._parse_model_id("deepseek-chat")
         assert provider == "deepseek"
+
+
+# ---------------------------------------------------------------------------
+# llm_providers.py — Gemini 429 → Ollama fallback
+# ---------------------------------------------------------------------------
+
+import httpx
+
+
+class _FallbackSettings:
+    OLLAMA_TIMEOUT = 5
+    OLLAMA_BASE_URL = "http://localhost:11434"
+    OLLAMA_GENERATION_MODEL = "gemma3"
+    OLLAMA_EMBEDDING_MODEL = "nomic-embed-text"
+    GEMINI_API_KEY = "fake-key"
+    DEEPSEEK_API_KEY = ""
+    DEFAULT_MODEL = "gemini-2.5-flash"
+    deepseek_models_list: list = []
+    gemini_models_list: list = ["gemini-2.5-flash"]
+
+
+def _http_error(status: int) -> httpx.HTTPStatusError:
+    req = httpx.Request("POST", "http://test")
+    resp = httpx.Response(status, request=req)
+    return httpx.HTTPStatusError(f"HTTP {status}", request=req, response=resp)
+
+
+def _async_gen_raising(exc):
+    async def gen(*args, **kwargs):
+        raise exc
+        yield  # makes this an async generator
+    return gen
+
+
+def _async_gen_yielding(text):
+    async def gen(*args, **kwargs):
+        yield text
+    return gen
+
+
+class TestGemini429Fallback:
+    @pytest.mark.asyncio
+    async def test_generate_falls_back_to_ollama_on_429(self):
+        llm = LLMProvider(_FallbackSettings())
+        with patch("backend.llm_providers._openai_compat_generate",
+                   _async_gen_raising(_http_error(429))), \
+             patch("backend.llm_providers._ollama_generate",
+                   _async_gen_yielding("local answer")):
+            result = await llm.generate("soru", model="gemini-2.5-flash")
+        assert result == "local answer"
+        await llm.aclose()
+
+    @pytest.mark.asyncio
+    async def test_generate_reraises_non_429(self):
+        llm = LLMProvider(_FallbackSettings())
+        with patch("backend.llm_providers._openai_compat_generate",
+                   _async_gen_raising(_http_error(500))):
+            with pytest.raises(httpx.HTTPStatusError):
+                await llm.generate("soru", model="gemini-2.5-flash")
+        await llm.aclose()
+
+    @pytest.mark.asyncio
+    async def test_generate_stream_falls_back_on_429(self):
+        llm = LLMProvider(_FallbackSettings())
+        with patch("backend.llm_providers._openai_compat_generate",
+                   _async_gen_raising(_http_error(429))), \
+             patch("backend.llm_providers._ollama_generate",
+                   _async_gen_yielding("local stream")):
+            chunks = [c async for c in
+                      llm.generate_stream("soru", model="gemini-2.5-flash")]
+        assert chunks == ["local stream"]
+        await llm.aclose()
+
+    @pytest.mark.asyncio
+    async def test_generate_no_fallback_when_gemini_ok(self):
+        llm = LLMProvider(_FallbackSettings())
+        with patch("backend.llm_providers._openai_compat_generate",
+                   _async_gen_yielding("gemini answer")):
+            result = await llm.generate("soru", model="gemini-2.5-flash")
+        assert result == "gemini answer"
+        await llm.aclose()
+
+
+# ---------------------------------------------------------------------------
+# router_agent.py — LLM classifier fallback
+# ---------------------------------------------------------------------------
+
+from backend.router_agent import RouterAgent, _llm_classify, AMBIGUITY_THRESHOLD
+
+
+def _make_agent(name: str) -> Dict[str, Any]:
+    return {"id": 1, "name": name, "system_prompt": "", "model": None,
+            "collection": "", "type": "chatbot"}
+
+
+class TestLLMClassifierFallback:
+    """RouterAgent invokes the LLM when cosine scores are ambiguous."""
+
+    @pytest.mark.asyncio
+    async def test_llm_classify_matches_agent_name(self):
+        llm = MagicMock()
+        llm.generate = AsyncMock(return_value="Yönetim Raporu")
+        candidates = [(0.72, _make_agent("Servis Kayıtları")),
+                      (0.71, _make_agent("Yönetim Raporu"))]
+        result = await _llm_classify("Toplam kaç servis kaydı var?", candidates, llm)
+        assert result is not None
+        assert result["name"] == "Yönetim Raporu"
+
+    @pytest.mark.asyncio
+    async def test_llm_classify_returns_none_on_error(self):
+        llm = MagicMock()
+        llm.generate = AsyncMock(side_effect=RuntimeError("llm down"))
+        candidates = [(0.72, _make_agent("Servis Kayıtları")),
+                      (0.71, _make_agent("Yönetim Raporu"))]
+        result = await _llm_classify("test?", candidates, llm)
+        assert result is None
+
+    @pytest.mark.asyncio
+    async def test_route_triggers_llm_when_gap_is_narrow(self):
+        """route() calls _llm_classify when rank-1/rank-2 gap < AMBIGUITY_THRESHOLD."""
+        settings = get_settings()
+        router = RouterAgent(pool=None, llm=None, settings=settings)
+
+        agent_a = _make_agent("Servis Kayıtları")
+        agent_b = _make_agent("Yönetim Raporu")
+        emb = [1.0] + [0.0] * 767
+
+        pool = MagicMock()
+        pool.acquire = MagicMock(return_value=MagicMock(
+            __aenter__=AsyncMock(return_value=MagicMock(
+                fetch=AsyncMock(return_value=[
+                    {**agent_a, "embedding": "[" + ",".join(["1.0"] + ["0.0"] * 767) + "]"},
+                    {**agent_b, "embedding": "[" + ",".join(["1.0"] + ["0.0"] * 767) + "]"},
+                ])
+            )),
+            __aexit__=AsyncMock(return_value=False),
+        ))
+        llm = MagicMock()
+        llm.get_embedding = AsyncMock(return_value=emb)
+        llm.generate = AsyncMock(return_value="Yönetim Raporu")
+
+        router.pool = pool
+        router.llm = llm
+
+        # Use a question with no keyword boosts so the gap stays at 0
+        result = await router.route("Hangi belgeler gerekli?")
+        assert result is not None
+        llm.generate.assert_awaited_once()
+
+    @pytest.mark.asyncio
+    async def test_route_skips_llm_when_gap_is_wide(self):
+        """route() skips LLM classifier when the winning agent is clearly ahead."""
+        settings = get_settings()
+        router = RouterAgent(pool=None, llm=None, settings=settings)
+
+        high_emb = "[" + ",".join(["1.0"] + ["0.0"] * 767) + "]"
+        low_emb  = "[" + ",".join(["0.0"] * 767 + ["1.0"]) + "]"
+
+        pool = MagicMock()
+        pool.acquire = MagicMock(return_value=MagicMock(
+            __aenter__=AsyncMock(return_value=MagicMock(
+                fetch=AsyncMock(return_value=[
+                    {**_make_agent("Servis Kayıtları"), "embedding": high_emb},
+                    {**_make_agent("Yönetim Raporu"),   "embedding": low_emb},
+                ])
+            )),
+            __aexit__=AsyncMock(return_value=False),
+        ))
+        llm = MagicMock()
+        llm.get_embedding = AsyncMock(return_value=[1.0] + [0.0] * 767)
+        llm.generate = AsyncMock(return_value="Servis Kayıtları")
+
+        router.pool = pool
+        router.llm = llm
+
+        result = await router.route("Toprak hatası nasıl çözülmüş?")
+        assert result is not None
+        llm.generate.assert_not_awaited()
 
 
 # ---------------------------------------------------------------------------

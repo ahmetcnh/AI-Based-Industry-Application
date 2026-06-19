@@ -1,0 +1,2174 @@
+[
+  {
+    "question": "Saha kabulü için hangi belgeler hazırlanmalı?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Önleyici bakım için arıza istatistikleri nelerdir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "İstatistiksel döküme göre hangi sistem en sorunlu?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Basınç valfi siparişi nasıl verilir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Sensör kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Bakım ekibi performans KPI'ları neler?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo sistem konfigürasyonu nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Conta parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Loop sürücü datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Müşteri sözleşme imzaladıktan sonra bilgilendirme nasıl yapılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Koil aktarma arabası maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "OHSAS 18001 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Yıllık arıza istatistikleri nasıl görünüyor?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Kategori dağılım grafiği için veri çıkarır mısın?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Yönetim için aylık arıza özeti çıkarır mısın?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Ödeme gecikmesi durumunda süreç nasıl işler?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Devreye alma öncesi elektrik testleri neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Ctl hattı'da vakum hatası için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Açıcı'da kapasitör arızası için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "CTL hattı ile blank hat arasındaki fark nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Kurulum hataları için garanti kapsamı nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Sensör hatası için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Hidrolik pompa parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Servo eksen kurulumu için adımlar nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Makinenin OHSAS 18001 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Özel proje için test ve validasyon planı hazır mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Müşteri proje tasarım revizyonu talep etti, süreç ne?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Servo motoru tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "EN ISO 10218 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Doğrultma makinesi maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Makine devreye almada müşteri onay süreci nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Destacker ailesi neler içeriyor?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Güç modülü arızası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Müşteri fiyat listesine nasıl ulaşılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Toplam kaç farklı arıza tipi kayıt altına alınmış?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Hava kaçağı nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Enkoder hatası için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Müşteri kabul koşulları teklife nasıl eklenir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Kompakt sürücü datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "ACK-02 sıcaklık alarmı var mı?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kompakt sürücü konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Proje başarı kriterleri nelerdir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Servo alarmı nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Hidrolik sistem ilk doldurma adımları neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Servo besleme hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Müşteri özel baskı talebi teklife nasıl giriyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Proje deliverable listesi tamamlandı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Bu ay sipariş edilen yedek parçalar neler?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje kickoff toplantısı ne zaman yapıldı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Hangi hat en yüksek OEE'ye sahip?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Inverter alarmı için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Açıcı ve doğrultma hizalaması nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Transfer hattı mekanik kurulum prosedürü nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "PTR-01 hidrolik basınç değeri nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Blank hat teknik özellikleri nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Selenoid valf hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Bu projenin kritik yolu nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "En uzun süren arıza tipleri neler?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Kurulum sırasında hangi ölçüm aletleri kullanılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Inverter stok durumu nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje kalite planı hazırlandı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kontaktör arızası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje önceki versiyonunun gantt şemasına nasıl erişilir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Son çeyrekte arıza sayısı arttı mı azaldı mı?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "En sık görülen 5 arıza tipi nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servis taleplerinin yıllık büyüme oranı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Decoiler hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Makinenin kabul testini kim yapar?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Hidrolik kaçağı için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Servo besleme teknik özellikleri nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Teklif kabul oranı nasıl takip ediliyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ticari koşullar nasıl belirleniyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Hangi arıza tipi en çok tekrar ediyor?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Teklif onay süreci kaç aşamadan oluşuyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Alt yüklenici proje takviminde ne zaman devreye giriyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Devreye alma sırasında hangi güvenlik önlemleri alınmalı?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Ortalama arıza süresi ve sıklığı istatistiği nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo alarmı kayıtlarının istatistiksel özeti nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "SBL-01 besleme doğruluğu ne durumda?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Enkoder hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Açıcı modelleri nelerdir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Makine nakliye sonrası kontrol listesi nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Hydrolik sistem basınç ayarı devreye almada nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Satış sonrası destek paketi teklife eklenebilir mi?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Proje aktivite listesi güncel mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "CTL-02 hızı ve OEE'si nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Genel müdür için haftalık arıza özeti lazım.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo sürücü datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Kontrol paneli montajı hangi adımları içerir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Müşteri iskonto talebi nasıl değerlendiriliyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Devreye alma checklist onayı kim tarafından verilir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Asi toprak hatası için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Arıza başına ortalama müdahale süresi nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Aylık arıza istatistiği yöneticiye nasıl sunulur?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Makinenin IEC 62061 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "CE sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje kapsamı değişti mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "WBS şeması hazır mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "IEC 62061 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Rollform hattı geometri ayarı nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Faz sırası hatası için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "CTL-01 hızı kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Aktif alarmlar neler?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Pozisyon hatası nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Teklif şablonu nerede bulunuyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "CTL-02'nin OEE değeri kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Plc hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Gantt çizelgesi nasıl güncelleniyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Asi toprak hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Makinenin EN ISO 10218 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Pres transfer robotlu sistemin katalog sayfası nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Müşteri proje değişiklik talepleri nasıl yönetiliyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "CTL-01 üretim sayacı kaçta?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "CTL-01 son alarm neydi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Makine başına düşen ortalama arıza sayısı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "LSD-01 sensör okumaları nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Inverter alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "EN ISO 10218 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Makine konumlandırma ve sabitlenme adımları neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Toplam servis kaydı sayısını kategori bazında göster.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Montaj takvimi hazırlandı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Makine verileri canlı olarak göster",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Sıcaklık alarmı nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Hidrolik pompa kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Hidrolik pompa stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Komisyoning sonrası kabul testleri neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Arıza kategorilerinin yüzde dağılımını tablo olarak ver.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo sürücü alarmı ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Güvenlik risk analizi nasıl yapılır?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "ACK-02 şu an çalışıyor mu?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Makine komisyoning belgesi nasıl doldurulur?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Devreye alma checklist'inde neler var?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Toplam arıza kaydı sayısını yıl bazında göster.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Proje fizibilite raporu nerede?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Servis kayıtlarından yönetici için sayısal döküm çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Bu yıl kaç arıza kaydı açıldı?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Teklif karşılaştırma tablosu nasıl hazırlanır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ctl hattı'da sensör hatası ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje raporunda hangi kilometre taşları var?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Loop sürücü teknik veri sayfası nasıl indirilir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Sigorta tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Limit switch arızası ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Pres'da ekran donması için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Doğrultma makinesi modelleri nelerdir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "ATEX sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Toplu sipariş indirimi ne kadar?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Bu ay en fazla kaydedilen sorun tipi hangisi?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Yedek parça siparişi için onay süreci nasıl işler?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Tasarım onay aşamasına geçildi mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Makine güvenilirlik endeksi için arıza verileri nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "DST-01 şu anki durumu nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Sistemin ilk testinde hangi alarm setleri kontrol edilmeli?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Makinenin ISO 9001 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Doğrultma makinesi datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Makinenin CE işaretlemesi süreci nasıl ilerler?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Yedek parça satış teklifi nasıl hazırlanır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "LSD-01 loop yüksekliği normal mi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Depo lokasyonlarında hangi parçalar mevcut?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Decoiler'da sensör hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "CE kurulum uygunluğu için hangi belgeler gerekli?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Vakum hatası nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje toplantısı tutanakları nerede?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Fiyat teklifi hazırlamak için mühendis desteği nasıl talep edilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Fiyat geçerliliği uzatma talepleri nasıl yönetiliyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "İlk çalışma öncesi güvenlik kontrolleri nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Canlı hat izleme verilerini göster",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kapasitör arızası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje paydaşları kimler?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Bant stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "V-kayış kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Sözleşme değişikliği talepleri nasıl işleniyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Sigorta parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "SBL-01 OEE kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Yurt dışı satışlarda döviz kuru nasıl belirleniyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Uygunluk beyanı hangi standartları kapsar?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Pozisyon hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proforma fatura ne zaman düzenlenir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "ISO 13849 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "SBL-01 besleme hızı kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kritik yedek parçaların tam envanter listesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Remote devreye alma desteği nasıl alınır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Aylık arıza trend analizi yapabilir misin?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Destacker modelleri ve kapasiteleri nelerdir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Müşteri özel koşulları teklife nasıl yansıtılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Basınç valfi alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje gecikmesi için kök neden analizi yapıldı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Inverter parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "En çok tekrarlanan 3 sorun tipi nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Sözleşme imzalandıktan sonra üretim süreci başlıyor mu?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Açıcı kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Gantt şeması üzerinde kritik görevler neler?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Projenin kritik milestone'larına ulaşıldı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Enkoder stok durumu nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Peşinat oranı standart olarak ne kadar?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Destacker konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "KPI raporu için arıza verileri lazım.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Yönetici özetini arıza kategorilerine göre çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Limit switch arızası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Güvenlik devresi testi kurulumda nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "ACK-01'in OEE'si kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Proje teslim tarihi ertelendi mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Işık bariyeri kurulumu için hangi standartlar geçerli?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Teklifin geçerlilik süresi ne kadar?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Destacker'da vakum hatası ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Tüm makinelerin sıcaklık değerleri nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Müşteriye katalog fiyat listesi nasıl gönderilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Satış hedefleri nasıl takip ediliyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Servo alarmları hangi makinelerde en çok görülüyor?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo sürücü çalışma voltajı nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "RFQ süreci nasıl işler?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Tedarik süreci proje planında nerede?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Güvenlik kapıları kurulumda nasıl test edilir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Ödeme planı seçenekleri nelerdir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Filtre alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Müşteriye teknik teklif sunumu nasıl yapılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "ISO 9001 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje yönetim aracında (Jira/MS Project) takip nasıl yapılıyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Temel montaj cıvataları ne kadar tork uygulanır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "OHSAS 18001 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje iletişim planı hazır mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Bant parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje kapanış prosedürü nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Yönetim için istatistiksel arıza analizi raporunu çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Hava kaçağı daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Koil aktarma arabası hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "ACK-02 bobin sıcaklığı kaç derece?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Proje haftalık ilerleme raporunu kim hazırlıyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Pnömatik silindir tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Temel hizalama toleransları ne kadar?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Spot teklif için süreç ne kadar sürüyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "CTL hattı ilk devreye almada hangi adımlar izlenir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Teklif hazırlama maliyeti müşteriye yansıtılır mı?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Servo motoru stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "CTL-02 alarm veriyor mu?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Müşteri onay vermezse teklif ne olur?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Toprak hatası için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Makinenin EN 60204 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Satış sözleşmesi hangi maddeleri içermeli?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Faz sırası hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Teklif revizyonu nasıl yapılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Destacker'da kontaktör arızası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Kontaktör parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "LSD-01 canlı sensör verisi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Proje mühendisi kim?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Milestone teslimat takvimi nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Sigorta siparişi nasıl verilir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Zincir parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "ATEX standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Arızaların çözüm süreleri ortalaması nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Besleme ünitesi devreye alma kontrol listesi nerede?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Ödeme vadesi ne kadar uzatılabilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Servo besleme çalışma voltajı nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Proje bütçesi güncel mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kapasitör kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "CTL-01 ve CTL-02 karşılaştır",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Makinenin ömür boyu güvenlik planı nedir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Yönetim kurulu sunumu için servis istatistikleri lazım.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Fabrikasyon takvimi nasıl görünüyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Tüm kategorilerde toplam kayıt dağılımı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Müşteri pilot sipariş koşulları nelerdir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Sensör hatası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Pnömatik silindir kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Makinenin güvenlik denetimi için hangi belgeler hazırlanmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje durumu nasıl takip edilir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kaç makine alarm durumunda?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Arızaların departman bazında dağılımı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Özel makine projesinin son tahmini tamamlanma tarihi nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "ACK-01 makinesinde aktif alarm var mı?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Basınç valfi tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Blank hat kurulum talimatları nasıl temin edilir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Fabrikada kaç makine aktif?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Uzun vadeli arıza trend analizi nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Servo sürücü serisi hangi uygulamalar için uygundur?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Hangi makineler 10 ton üzeri kapasiteye sahip?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Zincir alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Saha montajında mekanik bağlantılar nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "DST-01 sensör değerleri neler?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Servo sürücü ailesi neler içeriyor?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Compact drive ürün ailesinde hangi modeller var?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "ISO 9001 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Kablo kopuğu nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Startup prosedürü sırasında hangi parametreler kontrol edilmeli?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Dijital ikiz dashboardunu aç",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Pres transfer çalışma voltajı nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Servo motoru stok durumu nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje takvimi revize edildi mi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "CTL-01 hattında sorun var mı?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Müşteri bütçe onayı alındıktan sonra ne yapılıyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Kompakt sürücü maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Güç modülü arızası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Elektrik topraklama prosedürü kurulum kılavuzunda nerede?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Kompakt sürücü kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Pres transfer kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "PTR-01 hidrolik alarm durumu?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "En son alarm hangi makineden geldi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Özel proje için onaylanmış bütçe nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Sertifikasyon belgesi geçerlilik süresi ne kadar?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "PTR-01 basınç alarmı veriyor mu?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Transfer hattı'da enkoder hatası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "CTL-01 hattının anlık durumu nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Uzun vadeli bakım anlaşması teklife dahil edilebilir mi?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Pres transfer kurulumunda dikkat edilmesi gerekenler neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Son yıla ait tüm arıza kayıtlarının özeti nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Elektrik bağlantıları kurulum kılavuzunda nerede açıklanmış?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Bant tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "ACK-01 aktif mi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Fabrika OEE ortalaması kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "DST-01 vakum durumu normal mi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Açıcı maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Yıllık satış raporu nasıl hazırlanıyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Makine verimliliği için arıza sıklığı istatistiği ver.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Yönetim kuruluna sunmak için özet istatistik tablosu hazırla.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Kablo kopuğu nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Risk değerlendirmesi raporu nasıl hazırlanır?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Açıcı ailesi neler içeriyor?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Özel proje için kaynak kısıtlamaları var mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Açıcı'da inverter alarmı nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Toplam kaç servis kaydı var?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Makine güvenlik kategorisi nasıl belirlenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "İlk devreye almada hangi yazılım ayarları yapılmalı?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Üretim sürecinde kalite kontrol noktaları neler?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje kapat kararı kim tarafından veriliyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Pres transfer konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Selenoid valf stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Ctl kesim hattı modelleri nelerdir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Pnömatik silindir alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Özel makine proje charter'ı nerede?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kapasitör arızası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Enkoder kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Müşteri kabul testleri proje planında ne zaman?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "SBL-01 son üretim değerleri?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Özel makine proje ekibi kimlerden oluşuyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Sigorta atması için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Filtre kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Makinenin CE uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "ISO 14001 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Garanti şartları teklife nasıl ekleniyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Satış temsilcisi komisyon hesabı nasıl yapılıyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Yönetim raporu için arıza sayım tablosu çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "En uzun tedarik süresine sahip parça hangisi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Doğrultma makinesi kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "CRM sistemine teklif nasıl girilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Sensör tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Enkoder tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Özel makine teknik şartnamesi onaylandı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Satış hedefi aşıldığında bonus politikası nedir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Pres'da kontaktör arızası ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Açıcı'da PLC hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Makine bazında arıza frekans raporu oluştur.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Ctl kesim hattı hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Transfer hattı'da selenoid valf hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Teklif iptali durumunda süreç nedir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Servis kaydı sayısı son 6 ayda nasıl seyretmiş?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Uygunsuzluk raporu nasıl doldurulur?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Satış ekibi yeni fiyat listesine nasıl erişir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Çeyreklik arıza istatistikleri nelerdir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "ISO kalite dokümanları nerede saklanıyor?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Tüm hatların OEE ortalaması nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Servis sözleşmesi teklifi neleri kapsar?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Zincir tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Hangi makinede en çok servis kaydı var?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Acil durdurma devresi hangi standarda göre tasarlanmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Servo sürücü parametre ayarı kurulumda nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Özel makine projesinin iş planı hazır mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kontaktör siparişi nasıl verilir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Pnömatik sistem devreye alma prosedürü nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Conta kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Geçen yıl en sık görülen 10 arıza tipi nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Makine kurulum adımları nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Arıza kayıtlarından yönetici özeti oluştur.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Genel arıza eğilimi raporunu hazırla.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Makinenin ISO 14001 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje milestone'larından hangisi tamamlandı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Belgelendirme sürecinde teknik dosya neler içermeli?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Kategori bazında toplam servis saatleri nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Transfer hattı'da hava kaçağı için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "PL (Performance Level) hesabı nasıl yapılır?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Müşteri ön ödeme nasıl alınıyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Özel CTL hattı projesinin durumu nedir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Servo alarmı ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Plc hatası nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Haftalık servis kayıtları özeti hazırlar mısın?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "ACK-02 bobin sayacı ne gösteriyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kapasitör stok durumu nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "LSD-01 aktif mi pasif mi?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Teklif sunumunda hangi teknik belgeler eklenmeli?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ctl kesim hattı konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Destacker montaj kılavuzu hangi bölümleri içeriyor?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Projenin hangi milestone'u gecikiyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Rulman tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Proje skop değişikliği nasıl onaylanır?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Geçen ay kaç servis talebi geldi?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Müşteri ön inceleme ziyareti nasıl planlanır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Servo sürücü maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Selenoid valf tedarik süresi ne kadar?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "V-kayış tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "CE belgesi için hangi belgeler gerekli?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Güvenlik röleleri hangi standarda göre seçilmeli?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Sipariş onayı alındıktan sonra süreç nasıl işler?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Yurt dışı müşteri için özel belge gereksinimleri neler?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "CTL hattı hız kalibrasyonu nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "ACK-01 bobin ağırlığı kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Sipariş formu nerede dolduruluyor?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Motor arızası nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Kilometre taşı raporunu müşteriye kim sunuyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Proje ekibine kim dahil?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Conta alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Müşteriye CTL hattı için fiyat teklifi nasıl hazırlanır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Decoiler'da pozisyon hatası ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "DST-01 vakum hatası var mı?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Doğrultma makinesi spesifikasyonları nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Müşteri referansı nasıl talep edilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ekran donması ne yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Teklif hazırlama için hangi teknik bilgiler gerekli?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ekran donması nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Loop sürücü modelleri nelerdir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Servo sürücü alarmı daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "ISO 14001 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Milestone gecikmesi nasıl yönetilir?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Destacker hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Kalite kontrol prosedürü nasıl işler?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "IEC 62061 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Makinenin ISO 13849 uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Incoterms seçeneği müşteriye nasıl sunulur?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Proje zaman çizelgesi değişiklikleri nasıl onaylanıyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Müşteri onay süreçleri proje planında nerede?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "V-kayış stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "CTL-01 normal mi çalışıyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Alarm listesini göster",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Makine direktifi gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Aylık arıza yüzde dağılımı tablosu hazırla.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "İndirim oranı yetkisi kimin onayına bağlı?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Hidrolik kaçağı nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Koil aktarma arabası teknik özellikleri nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Kapasitör tedarikçisi kimdir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Hangi makineler şu an çalışıyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Destacker maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "CE standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Hidrolik arızaları toplam kayıtların yüzde kaçını oluşturuyor?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "LSD-01 loop yüksekliği kaç mm?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "İç denetim prosedürü nasıl işler?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje tamamlanma sertifikası hazır mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Toplam servis kayıtlarının yüzde dağılımı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Arızaların kategori dağılımı nasıl?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "PTR-01 hidrolik sıcaklığı normal mı?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kontaktör stok durumu nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Makine satış sonrası kurulum desteği nasıl talep edilir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Canlı dashboard'a bağlan",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "En kritik 5 arıza tipi için istatistik raporla.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "OEE değerleri hangi makinelerde düşük?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Decoiler kurulum adımları nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Toprak hatası nasıl çözülmüş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "CTL-02 sıcaklık sensörü ne okuyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Pres transfer datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Basınç düşüşü için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Kurulum sonrası garanti şartları nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Vardiya üretim sayıları nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Koil aktarma arabası kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "EN 60204 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Fabrika genel durumu nasıl?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Doğrultma ünitesi hizalama toleransları neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Servo besleme kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Rulman stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Kilometre taşı toplantısı ne zaman?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Kritik arıza oranı yüzde kaç?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Selenoid valf hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Hangi makine en çok alarm veriyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Proje risk planı hazırlandı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Periyodik güvenlik denetimi ne kadar sıklıkla yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Rekabetçi teklif durumunda indirim politikası nedir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Kontaktör arızası nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "SBL-01 üretim sayacı ne gösteriyor?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kalite yönetim sistemi hangi prosedürleri içeriyor?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Proje ilerlemesi yüzde kaç?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "CTL-01 sıcaklığı kaç?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Yönetim için servis istatistikleri özetini çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Pres kurs ayarı devreye almada nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Inverter alarmı için kayıtlarda ne var?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje kapsamı dışına çıkıldı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Proje zaman çizelgesi müşteriye sunuldu mu?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Canlı makine durumunu göster",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Kurulum tamamlanınca bakım ekibine handover nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Sensör alternatifi var mı?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Loop sürücü çalışma voltajı nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "ACK hatlarının durumu nasıl?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Decoiler datasheet bilgileri nerede?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Saha mühendisi kurulum raporunu nereye gönderir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Güvenlik fonksiyonları nasıl doğrulanır?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Blank hat hangi model seçilmeli?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Blank hat ailesi neler içeriyor?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Filtre stoğu tükendi mi?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Pres'da servo alarmı daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Proje dosyası nerede tutuluyor?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Haftalık KPI özet tablosu arıza verileriyle hazırla.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Acil durum için hangi parçaları stokta bulundurmak gerekir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Arıza tiplerine göre sayısal döküm tablosu çıkar.",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Konveyör hız kalibrasyonu nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Basınç düşüşü nasıl giderilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Destacker'da kapasitör arızası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Dövizli teklif nasıl TL'ye çevrilir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "RFQ yanıt süresi kaç gündür?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Satış süreci yönetim raporu nasıl hazırlanır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Sigorta atması daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Bakım maliyetleri için arıza kategorisi dağılımı nedir?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Özel proje için kaynak planlaması yapıldı mı?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Makinenin zemin ankrajı nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Pres transfer robot kurulumunda kritik noktalar neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Yükleme rampa kurulum adımları nelerdir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Kabul testi prosedürü nasıl ilerler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Makine teslim protokolü neleri içerir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Satış hedefi tutturulmazsa ne yapılır?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Blank hat konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Loop sürücü konfigürasyonları neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "İlk çalıştırmada yapılacak testler neler?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "KPI dashboard'u için hangi servis istatistikleri gerekli?",
+    "expected_agent": "Yönetim Raporu"
+  },
+  {
+    "question": "Kaç hat aktif, kaç hat pasif?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "EN 60204 sertifikası için hangi testler yapılmalı?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "DST-01'in vakum basıncı nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Selenoid valf kritik stok seviyesi nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Pozisyon sensörleri kurulumda nasıl kalibre edilir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "PTR-01 sıcaklığı kaç derece?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Tedarikçi kalite gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "ISO 13849 standardı gereksinimleri nelerdir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Makine durumu raporu göster",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "Müşteri şikayeti satış sürecini nasıl etkiler?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Sıcaklık alarmı için hangi işlem yapılmış?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Decoiler çalışma voltajı nedir?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Devreye alma protokolü müşteriye nasıl sunulur?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Decoiler'da enkoder hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "Decoiler kapasite değerleri neler?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Vakum hatası daha önce nasıl düzeltilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "İlk test koşumunda nelere dikkat edilmeli?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Sistemin enerji analizatörüyle devreye alma testi nasıl yapılır?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Motor arızası nasıl müdahale edilmiş?",
+    "expected_agent": "Servis Kayıtları"
+  },
+  {
+    "question": "İhale tekliflerinde hangi belgeler gerekmektedir?",
+    "expected_agent": "Satış ve Teklifler"
+  },
+  {
+    "question": "Ctl kesim hattı maksimum kapasitesi kaç ton?",
+    "expected_agent": "Ürün Kataloğu"
+  },
+  {
+    "question": "Montaj sonrası mekanik kontrol prosedürü nedir?",
+    "expected_agent": "Kurulum ve Devreye Alma"
+  },
+  {
+    "question": "Makinenin ATEX uygunluğu nasıl belgelenir?",
+    "expected_agent": "Kalite ve Uyumluluk"
+  },
+  {
+    "question": "Rulman parça numarası nedir?",
+    "expected_agent": "Yedek Parça"
+  },
+  {
+    "question": "Teslim takvimi müşteri onayına sunuldu mu?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "PTR-01 basınç değeri nedir?",
+    "expected_agent": "Dijital İkiz"
+  },
+  {
+    "question": "WBS üzerinde yapılan son değişiklik neydi?",
+    "expected_agent": "Özel Projeler"
+  },
+  {
+    "question": "Arıza sıklığı aydan aya nasıl değişiyor?",
+    "expected_agent": "Yönetim Raporu"
+  }
+]

@@ -47,6 +47,11 @@ async def insert_chunk(
     return row["id"]
 
 
+def _split_collection(collection: str) -> List[str]:
+    """Support comma-separated multi-collection strings (e.g. 'col1,col2')."""
+    return [c.strip() for c in collection.split(",") if c.strip()]
+
+
 async def vector_search(
     conn: asyncpg.Connection,
     *,
@@ -57,19 +62,20 @@ async def vector_search(
     k: int = 10,
 ) -> List[Dict[str, Any]]:
     emb_str = "[" + ",".join(str(v) for v in embedding) + "]"
+    cols = _split_collection(collection)
     rows = await conn.fetch(
         """
         SELECT id, content, metadata,
                1 - (embedding <=> $1::vector) AS vector_score
         FROM chunks
-        WHERE collection = $2
+        WHERE collection = ANY($2)
           AND tenant_id = $3
           AND user_id = $4
           AND embedding IS NOT NULL
         ORDER BY embedding <=> $1::vector
         LIMIT $5
         """,
-        emb_str, collection, tenant_id, user_id, k,
+        emb_str, cols, tenant_id, user_id, k,
     )
     return [dict(r) for r in rows]
 
@@ -83,19 +89,20 @@ async def bm25_search(
     user_id: int,
     k: int = 10,
 ) -> List[Dict[str, Any]]:
+    cols = _split_collection(collection)
     rows = await conn.fetch(
         """
         SELECT id, content, metadata,
                ts_rank(content_tsv, plainto_tsquery('turkish', $1)) AS bm25_score
         FROM chunks
-        WHERE collection = $2
+        WHERE collection = ANY($2)
           AND tenant_id = $3
           AND user_id = $4
           AND content_tsv @@ plainto_tsquery('turkish', $1)
         ORDER BY bm25_score DESC
         LIMIT $5
         """,
-        query, collection, tenant_id, user_id, k,
+        query, cols, tenant_id, user_id, k,
     )
     return [dict(r) for r in rows]
 
@@ -109,14 +116,15 @@ async def ilike_search(
     user_id: int,
     k: int = 5,
 ) -> List[Dict[str, Any]]:
+    cols = _split_collection(collection)
     rows = await conn.fetch(
         """
         SELECT id, content, metadata, 0.3::float AS vector_score
         FROM chunks
-        WHERE collection = $1 AND tenant_id = $2 AND user_id = $3
+        WHERE collection = ANY($1) AND tenant_id = $2 AND user_id = $3
           AND content ILIKE $4
         LIMIT $5
         """,
-        collection, tenant_id, user_id, f"%{phrase}%", k,
+        cols, tenant_id, user_id, f"%{phrase}%", k,
     )
     return [dict(r) for r in rows]

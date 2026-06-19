@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
+    # Override via env var: PUBLIC_BASE_URL=http://51.20.115.179:8000
+    # If empty, auto-detected from AWS metadata or local IP at startup.
+    PUBLIC_BASE_URL: str = ""
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
 
     DATABASE_URL: str = "postgresql://postgres:test1234@localhost:5432/ragdb"
@@ -22,11 +25,14 @@ class Settings(BaseSettings):
     OLLAMA_GENERATION_MODEL: str = "gemma3"
     OLLAMA_ROUTING_MODEL: str = "gemma3"
     OLLAMA_EMBEDDING_MODEL: str = "nomic-embed-text"
-    OLLAMA_TIMEOUT: int = 120
+    OLLAMA_TIMEOUT: int = 300
     DEFAULT_MODEL: str = "ollama:gemma3"
 
     DEEPSEEK_API_KEY: Optional[str] = None
     DEEPSEEK_MODELS: str = "deepseek-chat,deepseek-reasoner"
+
+    GEMINI_API_KEY: Optional[str] = None
+    GEMINI_MODELS: str = "gemini-2.5-flash,gemini-2.5-pro"
 
     DEFAULT_ANSWER_LANGUAGE: str = "tr"
     RAG_MULTI_QUERY: bool = False
@@ -95,6 +101,12 @@ class Settings(BaseSettings):
         if not self.DEEPSEEK_API_KEY:
             return []
         return [m.strip() for m in self.DEEPSEEK_MODELS.split(",") if m.strip()]
+
+    @property
+    def gemini_models_list(self) -> List[str]:
+        if not self.GEMINI_API_KEY:
+            return []
+        return [m.strip() for m in self.GEMINI_MODELS.split(",") if m.strip()]
 
     def ensure_directories(self) -> None:
         for d in [self.UPLOAD_DIR, os.path.dirname(self.SQLITE_DB_PATH)]:

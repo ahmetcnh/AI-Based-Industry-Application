@@ -30,9 +30,11 @@ services:
     ports:
       - "8000:8000"
     env_file: .env
+    dns_search: "."
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - postgres
-      - neo4j
     volumes:
       - ./issue_solution_final.xlsx:/app/issue_solution_final.xlsx:ro
       - uploads_data:/app/data/uploads
@@ -45,13 +47,11 @@ services:
     ports:
       - "3000:8080"
     environment:
-      OPENAI_API_BASE_URL: http://backend:8000/v1
+      OPENAI_API_BASE_URL: http://172.31.29.160:8000/v1
       OPENAI_API_KEY: unused
       OLLAMA_BASE_URL: ""
       ENABLE_OLLAMA_API: "false"
       WEBUI_AUTH: "false"
-    depends_on:
-      - backend
     volumes:
       - openwebui_data:/app/backend/data
 

@@ -145,6 +145,32 @@ def test_safe_select_accepts_count():
     assert ok
 
 
+def test_safe_select_accepts_group_by():
+    ok, _ = validate_safe_select(
+        "SELECT tespit_edilenler, COUNT(*) AS adet FROM service_records "
+        "GROUP BY tespit_edilenler ORDER BY adet DESC LIMIT 10"
+    )
+    assert ok
+
+
+def test_safe_select_accepts_union_all_stats():
+    # The management-report agent emits category counts via UNION ALL
+    ok, _ = validate_safe_select(
+        "SELECT 'servo' AS tip, COUNT(*) AS adet FROM service_records "
+        "WHERE tespit_norm LIKE '%servo%' "
+        "UNION ALL SELECT 'vakum', COUNT(*) FROM service_records "
+        "WHERE tespit_norm LIKE '%vakum%' ORDER BY adet DESC LIMIT 20"
+    )
+    assert ok
+
+
+def test_safe_select_union_rejects_other_table():
+    ok, _ = validate_safe_select(
+        "SELECT 1 FROM service_records UNION ALL SELECT 1 FROM agents LIMIT 5"
+    )
+    assert not ok
+
+
 @pytest.mark.parametrize("sql", [
     "UPDATE service_records SET yapilan_islem='x'",
     "DROP TABLE service_records",
@@ -228,3 +254,114 @@ def test_build_summary_prompt_contains_rows_and_question():
     )
     assert "toprak hatası" in prompt
     assert "modül reset" in prompt
+
+
+# ---------------------------------------------------------------------------
+# Pending state machine (fake asyncpg pool)
+# ---------------------------------------------------------------------------
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from backend.agent_creation import (
+    create_pending,
+    fulfill_pending_after_ingest,
+    pop_unannounced,
+)
+
+
+def _make_pool(*fetchrow_returns):
+    """Build a fake asyncpg pool that returns rows from fetchrow in sequence."""
+    conn = AsyncMock()
+    conn.execute = AsyncMock(return_value=None)
+    conn.fetchrow = AsyncMock(side_effect=list(fetchrow_returns))
+    conn.__aenter__ = AsyncMock(return_value=conn)
+    conn.__aexit__ = AsyncMock(return_value=None)
+
+    pool = MagicMock()
+    pool.acquire = MagicMock(return_value=conn)
+    return pool, conn
+
+
+class _FakeSettings:
+    PENDING_AGENT_TTL_MINUTES = 30
+    DEFAULT_MODEL = "ollama:gemma3"
+    AGENTS_STORE_DIR = "/tmp/agents_store_test"
+
+
+class _FakeLLMForPending:
+    async def get_embedding(self, text):
+        return [0.0] * 768
+
+    async def generate(self, prompt, system_prompt=None, model=None):
+        return '{"name": "TestBot", "role": "test"}'
+
+
+@pytest.mark.asyncio
+async def test_create_pending_expires_old_and_inserts():
+    pool, conn = _make_pool()
+    await create_pending(
+        pool,
+        raw_message="Bir agent oluştur",
+        params={"name": "TestBot", "role": "test"},
+        ttl_minutes=30,
+    )
+    assert conn.execute.call_count == 2
+    first_sql = conn.execute.call_args_list[0][0][0]
+    assert "expired" in first_sql
+    second_sql = conn.execute.call_args_list[1][0][0]
+    assert "INSERT" in second_sql
+
+
+@pytest.mark.asyncio
+async def test_fulfill_pending_no_row_returns_none():
+    pool, conn = _make_pool(None)
+    result = await fulfill_pending_after_ingest(
+        pool, _FakeLLMForPending(), _FakeSettings(),
+        collection="test_collection",
+    )
+    assert result is None
+
+
+@pytest.mark.asyncio
+async def test_fulfill_pending_creates_agent():
+    pending_row = {"id": 42, "params": '{"name": "TestBot", "role": "test_role"}'}
+    not_found = None
+    agent_row = {"id": 99}
+
+    pool, conn = _make_pool(pending_row, not_found, agent_row)
+    conn.execute = AsyncMock(return_value=None)
+
+    with patch("backend.agent_creation.write_definition_file", return_value="/tmp/test.json"), \
+         patch("backend.deps.get_router") as mock_get_router:
+        mock_get_router.side_effect = RuntimeError("not ready")
+        result = await fulfill_pending_after_ingest(
+            pool, _FakeLLMForPending(), _FakeSettings(),
+            collection="test_collection",
+            source_file="test.pdf",
+        )
+
+    assert result is not None
+    assert result["name"] == "TestBot"
+    assert result["collection"] == "test_collection"
+
+
+@pytest.mark.asyncio
+async def test_pop_unannounced_returns_name():
+    row = {"fulfilled_agent_name": "TestBot"}
+    pool, conn = _make_pool(row)
+    name = await pop_unannounced(pool)
+    assert name == "TestBot"
+
+
+@pytest.mark.asyncio
+async def test_pop_unannounced_returns_none_when_no_row():
+    pool, conn = _make_pool(None)
+    name = await pop_unannounced(pool)
+    assert name is None
+
+
+@pytest.mark.asyncio
+async def test_pop_unannounced_returns_none_on_exception():
+    pool = MagicMock()
+    pool.acquire = MagicMock(side_effect=Exception("db down"))
+    name = await pop_unannounced(pool)
+    assert name is None

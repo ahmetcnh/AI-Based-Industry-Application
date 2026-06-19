@@ -1,0 +1,54 @@
+[
+  {"question": "Hidrolik arızalarında ne yapılmış?", "expected_agent": "Servis Kayıtları"},
+  {"question": "Enkoder hatası nasıl çözülmüş?", "expected_agent": "Servis Kayıtları"},
+  {"question": "Motor arızası kaç kez yaşanmış?", "expected_agent": "Servis Kayıtları"},
+  {"question": "Transfer hattında ASI toprak hatası alınıyor, sorun ne olabilir?", "expected_agent": "Servis Kayıtları"},
+  {"question": "Destacker'da vakum hatasına düşüyor, daha önce nasıl giderilmiş?", "expected_agent": "Servis Kayıtları"},
+
+  {"question": "Compact drive modellerini listeler misin?", "expected_agent": "Ürün Kataloğu"},
+  {"question": "Decoiler açıcı modelleri neler?", "expected_agent": "Ürün Kataloğu"},
+  {"question": "CTL kesim hattının teknik özellikleri nedir?", "expected_agent": "Ürün Kataloğu"},
+  {"question": "Servo sürücü ürün ailesinde hangi makineler var?", "expected_agent": "Ürün Kataloğu"},
+  {"question": "Pres transfer sisteminin datasheet bilgilerini ver", "expected_agent": "Ürün Kataloğu"},
+
+  {"question": "Yedek parça stok durumu nedir?", "expected_agent": "Yedek Parça"},
+  {"question": "Bu parçanın parça numarası ve tedarik süresi nedir?", "expected_agent": "Yedek Parça"},
+  {"question": "Kritik yedek parçaların envanter listesi", "expected_agent": "Yedek Parça"},
+  {"question": "Rulman için yedek parça siparişi nasıl verilir?", "expected_agent": "Yedek Parça"},
+
+  {"question": "Makine kurulum adımları nelerdir?", "expected_agent": "Kurulum ve Devreye Alma"},
+  {"question": "Devreye alma checklist'inde neler var?", "expected_agent": "Kurulum ve Devreye Alma"},
+  {"question": "Saha montajında mekanik bağlantılar nasıl yapılır?", "expected_agent": "Kurulum ve Devreye Alma"},
+  {"question": "Kabul testi prosedürü nasıl ilerliyor?", "expected_agent": "Kurulum ve Devreye Alma"},
+
+  {"question": "CE sertifikası gereksinimleri neler?", "expected_agent": "Kalite ve Uyumluluk"},
+  {"question": "Uygunluk beyanı hangi standartları kapsıyor?", "expected_agent": "Kalite ve Uyumluluk"},
+  {"question": "ISO kalite dokümanları nerede?", "expected_agent": "Kalite ve Uyumluluk"},
+  {"question": "Makinenin güvenlik denetimi için hangi belgeler gerekli?", "expected_agent": "Kalite ve Uyumluluk"},
+
+  {"question": "Fiyat teklifi nasıl hazırlanır?", "expected_agent": "Satış ve Teklifler"},
+  {"question": "RFQ için ticari koşullar neler?", "expected_agent": "Satış ve Teklifler"},
+  {"question": "Ödeme planı seçenekleri nelerdir?", "expected_agent": "Satış ve Teklifler"},
+  {"question": "Müşteriye verilen son teklifin sipariş onayı geldi mi?", "expected_agent": "Satış ve Teklifler"},
+
+  {"question": "En sık görülen arıza tipleri nelerdir?", "expected_agent": "Yönetim Raporu"},
+  {"question": "Toplam kaç servis kaydı var?", "expected_agent": "Yönetim Raporu"},
+  {"question": "Arızaların kategori dağılımı nasıl?", "expected_agent": "Yönetim Raporu"},
+  {"question": "Yönetim için aylık arıza özeti çıkarır mısın?", "expected_agent": "Yönetim Raporu"},
+
+  {"question": "Proje durumu nasıl takip edilir?", "expected_agent": "Özel Projeler"},
+  {"question": "Milestone teslimat takvimi nedir?", "expected_agent": "Özel Projeler"},
+  {"question": "Özel makine projesinin iş planı hazır mı?", "expected_agent": "Özel Projeler"},
+  {"question": "Proje raporunda hangi kilometre taşları var?", "expected_agent": "Özel Projeler"},
+
+  {"question": "CTL-01 hattının anlık durumu nedir?", "expected_agent": "Dijital İkiz"},
+  {"question": "CTL-02'nin OEE değeri kaç?", "expected_agent": "Dijital İkiz"},
+  {"question": "ACK-01 makinesinde aktif alarm var mı?", "expected_agent": "Dijital İkiz"},
+  {"question": "Hangi makineler şu an çalışıyor?", "expected_agent": "Dijital İkiz"},
+  {"question": "PTR-01 hidrolik basınç değeri nedir?", "expected_agent": "Dijital İkiz"},
+  {"question": "DST-01'in vakum basıncı kaç bar?", "expected_agent": "Dijital İkiz"},
+  {"question": "SBL-01 besleme doğruluğu ne durumda?", "expected_agent": "Dijital İkiz"},
+  {"question": "LSD-01 loop yüksekliği normal mi?", "expected_agent": "Dijital İkiz"},
+  {"question": "Fabrikada kaç makine aktif, canlı durum nedir?", "expected_agent": "Dijital İkiz"},
+  {"question": "ACK-02 bobin sıcaklığı kaç derece?", "expected_agent": "Dijital İkiz"}
+]

@@ -1,0 +1,7 @@
+CE Compliance for Press Feeding and Transfer Lines
+
+Applicable references:
+- Machinery Directive 2006/42/EC
+- EN ISO 12100 risk assessment
+- EN 60204-1 electrical safety
+- EN ISO 13849-1 safety-related control systems

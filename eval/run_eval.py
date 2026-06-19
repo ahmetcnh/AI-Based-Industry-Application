@@ -40,20 +40,42 @@ def _normalize(text: str) -> str:
     return unicodedata.normalize("NFKD", text)
 
 
+def _keyword_variants(kw_norm: str) -> List[str]:
+    """Turkish-morphology-tolerant variants of a normalized keyword.
+
+    Turkish is agglutinative: a keyword rarely appears in its citation form.
+    Two conservative transformations cover most cases without loosening the
+    match into false positives:
+      - final-consonant softening before vowel suffixes: kacak -> kacag(i)
+      - stripping a single productive suffix (-di past, -me/-ma verbal noun,
+        -mesi/-masi possessive verbal noun): degistirildi -> degistiril
+    """
+    variants = [kw_norm]
+    soften = {"k": "g", "p": "b", "t": "d"}
+    if kw_norm[-1:] in soften:
+        variants.append(kw_norm[:-1] + soften[kw_norm[-1]])
+    for suffix in ("di", "du", "ti", "tu", "me", "ma"):
+        if len(kw_norm) >= 4 + len(suffix) and kw_norm.endswith(suffix):
+            variants.append(kw_norm[: -len(suffix)])
+    return variants
+
+
 def _keywords_found(answer: str, keywords: List[str]) -> List[str]:
     norm_answer = _normalize(answer)
     missing = []
     for kw in keywords:
-        if _normalize(kw) not in norm_answer:
+        kw_norm = _normalize(kw)
+        if not any(v in norm_answer for v in _keyword_variants(kw_norm)):
             missing.append(kw)
     return missing
 
 
-async def evaluate(base_url: str, model: str) -> None:
+async def evaluate(base_url: str, model: str, delay: float = 0.0,
+                   verbose: bool = False) -> None:
     questions = json.loads(QUESTIONS_FILE.read_text(encoding="utf-8"))
 
     results = []
-    async with httpx.AsyncClient(timeout=120) as client:
+    async with httpx.AsyncClient(timeout=300) as client:
         for q in questions:
             t0 = time.time()
             try:
@@ -78,8 +100,15 @@ async def evaluate(base_url: str, model: str) -> None:
                 "passed": len(missing) == 0,
                 "missing": missing,
                 "duration": duration,
-                "answer_snippet": answer[:80],
+                "answer_snippet": answer[:300],
             })
+            if verbose:
+                status = "PASS" if not missing else f"FAIL (missing: {', '.join(missing)})"
+                print(f"\n── Q{q['id']} [{status}] {duration:.1f}s ──")
+                print(f"   Soru : {q['question']}")
+                print(f"   Cevap: {answer[:300].replace(chr(10), ' ')}")
+            if delay > 0:
+                await asyncio.sleep(delay)
 
     # Print table
     header = f"{'ID':<4} {'Pass':<5} {'Duration':>9}  {'Question':<62}  {'Missing Keywords'}"
@@ -108,5 +137,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--model", default="coiltech-rag", help="Model ID (default: coiltech-rag)")
     parser.add_argument("--base-url", default="http://localhost:8000", help="API base URL (default: http://localhost:8000)")
+    parser.add_argument("--delay", type=float, default=0.0,
+                        help="Seconds to wait between questions (avoid Gemini rate limit)")
+    parser.add_argument("--verbose", action="store_true",
+                        help="Print full answers as they arrive")
     args = parser.parse_args()
-    asyncio.run(evaluate(args.base_url, args.model))
+    asyncio.run(evaluate(args.base_url, args.model, delay=args.delay, verbose=args.verbose))

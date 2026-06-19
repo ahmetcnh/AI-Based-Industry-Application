@@ -1,0 +1,2 @@
+correct,total,p_hat,ci_lower,ci_center,ci_upper,z_score,confidence_pct,claim
+43,44,0.977273,0.88192,0.938949,0.995977,1.96,95,43/44=97.7% [88.2%–99.6%] at 95% CI

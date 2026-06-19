@@ -1,0 +1,14 @@
+Servo Drive Alarm Matrix
+
+Alarm E-101: Servo overload.
+Primary checks:
+1. Strip thickness matches job recipe.
+2. Feed roll pressure is not excessive.
+3. Encoder coupling is tight.
+4. Straightener entry angle is correct.
+
+Alarm E-214: Encoder drift.
+Primary checks:
+1. Check backlash in coupling.
+2. Verify reference mark at home position.
+3. Recalibrate feed length after coil change.

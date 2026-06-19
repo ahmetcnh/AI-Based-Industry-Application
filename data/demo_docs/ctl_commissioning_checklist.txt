@@ -1,0 +1,16 @@
+Cut-to-Length Line Commissioning Checklist
+
+Mechanical:
+- Foundation bolts torqued and marked
+- Straightener alignment verified
+- Shear blade gap adjusted to material thickness
+
+Electrical and controls:
+- Emergency stop chain tested
+- Line encoder scaling verified
+- Recipe transfer from HMI to PLC confirmed
+
+Process validation:
+- Feed length deviation below 0.15 mm
+- Line speed ramp stable to rated speed
+- Stacker discharge synchronized with shear cycle

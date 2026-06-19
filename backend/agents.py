@@ -53,7 +53,7 @@ async def list_agents(request: Request):
     async with pool.acquire() as conn:
         rows = await conn.fetch(
             "SELECT id, name, system_prompt, model, collection, type, created_at "
-            "FROM agents WHERE tenant_id=$1 AND user_id=$2 ORDER BY id",
+            "FROM agents WHERE tenant_id=$1 AND (user_id=$2 OR user_id=1) ORDER BY id",
             tenant_id, user_id,
         )
     return [dict(r) for r in rows]

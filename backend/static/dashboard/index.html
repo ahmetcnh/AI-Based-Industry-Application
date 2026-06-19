@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coiltech — Makine İzleme Sistemi</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg2: #161b22;
+    --bg3: #1c2330;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --green: #3fb950;
+    --yellow: #d29922;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --teal: #39d353;
+    --orange: #db6d28;
+    --gauge-bg: #21262d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', 'Inter', system-ui, sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .hdr {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .hdr-logo {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: var(--blue);
+    text-transform: uppercase;
+  }
+  .hdr-sep { width: 1px; height: 24px; background: var(--border); }
+  .hdr-title { font-size: 13px; color: var(--text2); }
+  .hdr-time { margin-left: auto; font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; }
+  .hdr-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+
+  /* ── KPI bar ── */
+  .kpi-bar {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 20px;
+    gap: 0;
+  }
+  .kpi {
+    padding: 10px 24px 10px 0;
+    border-right: 1px solid var(--border);
+    min-width: 140px;
+  }
+  .kpi:last-child { border-right: none; }
+  .kpi-label { font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: var(--text2); }
+  .kpi-val { font-size: 22px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+  .kpi-unit { font-size: 11px; color: var(--text2); margin-left: 3px; }
+  .kpi-delta { font-size: 10px; margin-top: 1px; }
+  .up { color: var(--green); }
+  .dn { color: var(--red); }
+  .neu { color: var(--text2); }
+
+  /* ── Main grid ── */
+  .main { padding: 16px 20px; display: flex; gap: 16px; }
+  .col-machines { flex: 1; min-width: 0; }
+  .col-right { width: 300px; flex-shrink: 0; display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── Machine grid ── */
+  .machine-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .card-hdr {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .card-id {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    color: var(--blue);
+    font-family: 'Consolas', monospace;
+  }
+  .card-name { font-size: 12px; color: var(--text2); }
+  .badge {
+    margin-left: auto;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+  }
+  .badge-run { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.3); }
+  .badge-idle { background: rgba(139,148,158,.1); color: var(--text2); border: 1px solid var(--border); }
+  .badge-maint { background: rgba(210,153,34,.15); color: var(--yellow); border: 1px solid rgba(210,153,34,.3); }
+  .badge-alarm { background: rgba(248,81,73,.15); color: var(--red); border: 1px solid rgba(248,81,73,.3); }
+
+  .card-body { padding: 10px 12px; }
+
+  /* ── Metrics grid inside card ── */
+  .metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .metric { background: var(--bg3); border-radius: 4px; padding: 6px 8px; }
+  .metric-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: .6px; color: var(--text2); }
+  .metric-val {
+    font-size: 16px; font-weight: 600; margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .metric-unit { font-size: 10px; color: var(--text2); }
+
+  /* ── OEE bar ── */
+  .oee-row { margin-top: 8px; }
+  .oee-lbl { display: flex; justify-content: space-between; font-size: 10px; color: var(--text2); margin-bottom: 3px; }
+  .oee-bar-bg { background: var(--gauge-bg); border-radius: 3px; height: 6px; }
+  .oee-bar { height: 6px; border-radius: 3px; transition: width .8s ease; }
+
+  /* ── Alarm row ── */
+  .alarm-row {
+    margin-top: 8px;
+    padding: 5px 8px;
+    background: rgba(248,81,73,.08);
+    border: 1px solid rgba(248,81,73,.25);
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--red);
+  }
+  .alarm-row::before { content: '⚠  '; }
+
+  /* ── Idle / maintenance card body ── */
+  .idle-body {
+    padding: 20px 12px;
+    text-align: center;
+    color: var(--text2);
+    font-size: 12px;
+  }
+  .idle-icon { font-size: 28px; margin-bottom: 6px; }
+
+  /* ── Right column: alarm panel & trend ── */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .panel-hdr {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    color: var(--text2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .panel-hdr span { color: var(--text); }
+  .alarm-count-badge {
+    background: var(--red);
+    color: #fff;
+    border-radius: 10px;
+    padding: 0 6px;
+    font-size: 10px;
+    margin-left: auto;
+    display: none;
+  }
+  .alarm-count-badge.show { display: inline; }
+
+  .alarm-list { max-height: 260px; overflow-y: auto; }
+  .alarm-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .alarm-item:last-child { border-bottom: none; }
+  .alarm-icon { color: var(--red); flex-shrink: 0; font-size: 12px; margin-top: 1px; }
+  .alarm-mid { font-family: monospace; font-size: 10px; color: var(--blue); white-space: nowrap; }
+  .alarm-msg { font-size: 11px; color: var(--text); }
+  .alarm-ts { font-size: 9px; color: var(--text2); margin-top: 2px; }
+  .no-alarms { padding: 20px 12px; text-align: center; color: var(--green); font-size: 12px; }
+
+  /* ── OEE chart (right panel) ── */
+  .oee-chart-wrap { padding: 12px; }
+  .oee-chart-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+  }
+  .oee-chart-id { font-family: monospace; font-size: 10px; color: var(--blue); width: 52px; flex-shrink: 0; }
+  .oee-chart-bar-bg { flex: 1; background: var(--gauge-bg); border-radius: 3px; height: 10px; }
+  .oee-chart-bar { height: 10px; border-radius: 3px; transition: width .8s ease; }
+  .oee-chart-val { font-size: 11px; font-variant-numeric: tabular-nums; width: 42px; text-align: right; }
+
+  /* ── Production table ── */
+  .prod-table { width: 100%; border-collapse: collapse; }
+  .prod-table td, .prod-table th {
+    padding: 5px 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    text-align: left;
+  }
+  .prod-table th { color: var(--text2); font-size: 9px; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+  .prod-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; color: var(--green); }
+  .prod-table tr:last-child td { border-bottom: none; }
+
+  /* ── Footer ── */
+  .footer {
+    padding: 10px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 10px;
+    color: var(--text2);
+    display: flex;
+    gap: 20px;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="hdr-logo">Coiltech</div>
+  <div class="hdr-sep"></div>
+  <div class="hdr-title">Makine İzleme Sistemi — Üretim Hattı A</div>
+  <div class="hdr-dot"></div>
+  <div class="hdr-time" id="hdr-time">--:--:--</div>
+</header>
+
+<div class="kpi-bar">
+  <div class="kpi">
+    <div class="kpi-label">Aktif Makine</div>
+    <div class="kpi-val"><span id="kpi-active">—</span><span class="kpi-unit">/ <span id="kpi-total">—</span></span></div>
+    <div class="kpi-delta neu" id="kpi-active-lbl">yükleniyor…</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Ortalama OEE</div>
+    <div class="kpi-val"><span id="kpi-oee">—</span><span class="kpi-unit">%</span></div>
+    <div class="kpi-delta" id="kpi-oee-delta"></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Vardiya Üretimi</div>
+    <div class="kpi-val"><span id="kpi-prod">—</span><span class="kpi-unit">parça</span></div>
+    <div class="kpi-delta neu">Bu vardiya</div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Aktif Alarm</div>
+    <div class="kpi-val" id="kpi-alarm-val"><span id="kpi-alarms">—</span></div>
+    <div class="kpi-delta" id="kpi-alarm-lbl"></div>
+  </div>
+  <div class="kpi">
+    <div class="kpi-label">Güncellenme</div>
+    <div class="kpi-val" style="font-size:13px" id="kpi-refresh-ts">—</div>
+    <div class="kpi-delta neu">5 sn aralıklı</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="col-machines">
+    <div class="machine-grid" id="machine-grid">
+      <!-- injected by JS -->
+    </div>
+  </div>
+  <div class="col-right">
+    <div class="panel">
+      <div class="panel-hdr">
+        <span>Alarm Paneli</span>
+        <span class="alarm-count-badge" id="alarm-badge">0</span>
+      </div>
+      <div class="alarm-list" id="alarm-list">
+        <div class="no-alarms">✓ Aktif alarm yok</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr"><span>OEE Karşılaştırma</span></div>
+      <div class="oee-chart-wrap" id="oee-chart">
+        <!-- injected by JS -->
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hdr"><span>Vardiya Üretim</span></div>
+      <table class="prod-table" id="prod-table">
+        <thead><tr><th>Makine</th><th>Parça</th></tr></thead>
+        <tbody id="prod-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <span>Coiltech Makine İzleme Sistemi v2.4</span>
+  <span>Tesis: İstanbul — Hat A</span>
+  <span id="footer-ts"></span>
+</div>
+
+<script>
+const API = '/api/digital-twin/status';
+let prevOEE = null;
+
+function fmt(n, dec = 1) {
+  if (n == null) return '—';
+  return Number(n).toFixed(dec);
+}
+
+function fmtInt(n) {
+  if (n == null || n === 0) return '0';
+  return Number(n).toLocaleString('tr-TR');
+}
+
+function oeeColor(v) {
+  if (v >= 90) return '#3fb950';
+  if (v >= 75) return '#d29922';
+  return '#f85149';
+}
+
+function statusBadge(m) {
+  if (m.alarms && m.alarms.length) return `<span class="badge badge-alarm">ALARM</span>`;
+  if (m.status === 'running') return `<span class="badge badge-run">ÇALIŞIYOR</span>`;
+  if (m.status === 'idle') return `<span class="badge badge-idle">BEKLEMEDE</span>`;
+  return `<span class="badge badge-maint">BAKIM</span>`;
+}
+
+function buildMetrics(m) {
+  const items = [];
+  if (m.speed_mpm != null) items.push({ l: 'Hat Hızı', v: fmt(m.speed_mpm), u: 'm/dak' });
+  if (m.temp_c != null) items.push({ l: 'Sıcaklık', v: fmt(m.temp_c), u: '°C', warn: m.temp_c > 73 });
+  if (m.hyd_bar != null) items.push({ l: 'Hidrolik', v: fmt(m.hyd_bar, 0), u: 'bar', warn: m.hyd_bar > 205 });
+  if (m.current_a != null) items.push({ l: 'Motor Akımı', v: fmt(m.current_a), u: 'A' });
+  if (m.strokes_pm != null) items.push({ l: 'Vuruş', v: fmt(m.strokes_pm), u: '/dak' });
+  if (m.vacuum_kpa != null) items.push({ l: 'Vakum', v: fmt(m.vacuum_kpa), u: 'kPa' });
+  if (m.tension_kn != null) items.push({ l: 'Gerginlik', v: fmt(m.tension_kn), u: 'kN' });
+  if (m.coil_diam_mm != null) items.push({ l: 'Rulo Çapı', v: m.coil_diam_mm, u: 'mm' });
+  if (m.coil_weight_t != null) items.push({ l: 'Rulo Ağ.', v: fmt(m.coil_weight_t), u: 'ton' });
+  if (m.feed_mm != null) items.push({ l: 'Besleme', v: fmt(m.feed_mm, 2), u: 'mm' });
+  if (m.feed_accuracy_mm != null) items.push({ l: 'Doğruluk', v: '±' + fmt(m.feed_accuracy_mm, 3), u: 'mm' });
+  if (m.loop_h_mm != null) items.push({ l: 'Loop Yük.', v: m.loop_h_mm, u: 'mm' });
+
+  const html = items.slice(0, 6).map(i => `
+    <div class="metric">
+      <div class="metric-lbl">${i.l}</div>
+      <div class="metric-val" style="${i.warn ? 'color:var(--red)' : ''}">${i.v}<span class="metric-unit"> ${i.u}</span></div>
+    </div>`).join('');
+
+  return `<div class="metrics">${html}</div>`;
+}
+
+function renderMachine(m) {
+  if (m.status !== 'running') {
+    const icon = m.status === 'idle' ? '⏸' : '🔧';
+    const msg = m.notes || (m.status === 'idle' ? 'Rulo değişimi bekleniyor' : 'Bakımda');
+    return `
+      <div class="card" id="card-${m.id}">
+        <div class="card-hdr">
+          <span class="card-id">${m.id}</span>
+          <span class="card-name">${m.name}</span>
+          ${statusBadge(m)}
+        </div>
+        <div class="idle-body">
+          <div class="idle-icon">${icon}</div>
+          <div>${msg}</div>
+        </div>
+      </div>`;
+  }
+
+  const oeeC = oeeColor(m.oee);
+  const alarmHtml = m.alarms && m.alarms.length
+    ? m.alarms.map(a => `<div class="alarm-row">${a}</div>`).join('')
+    : '';
+
+  return `
+    <div class="card" id="card-${m.id}">
+      <div class="card-hdr">
+        <span class="card-id">${m.id}</span>
+        <span class="card-name">${m.name}</span>
+        ${statusBadge(m)}
+      </div>
+      <div class="card-body">
+        ${buildMetrics(m)}
+        <div class="oee-row">
+          <div class="oee-lbl"><span>OEE</span><span style="color:${oeeC};font-weight:700">${fmt(m.oee)}%</span></div>
+          <div class="oee-bar-bg">
+            <div class="oee-bar" style="width:${m.oee}%;background:${oeeC}"></div>
+          </div>
+        </div>
+        ${alarmHtml}
+      </div>
+    </div>`;
+}
+
+function renderAlarms(summary) {
+  const badge = document.getElementById('alarm-badge');
+  const list = document.getElementById('alarm-list');
+  const alarms = summary.alarms || [];
+
+  if (alarms.length === 0) {
+    badge.classList.remove('show');
+    list.innerHTML = '<div class="no-alarms">✓ Aktif alarm yok</div>';
+    return;
+  }
+
+  badge.textContent = alarms.length;
+  badge.classList.add('show');
+
+  const now = new Date().toLocaleTimeString('tr-TR');
+  list.innerHTML = alarms.map(([mid, msg]) => `
+    <div class="alarm-item">
+      <div class="alarm-icon">▲</div>
+      <div>
+        <div><span class="alarm-mid">${mid}</span> <span class="alarm-msg">${msg}</span></div>
+        <div class="alarm-ts">${now}</div>
+      </div>
+    </div>`).join('');
+}
+
+function renderOEEChart(machines) {
+  const running = machines.filter(m => m.status === 'running' && m.oee > 0);
+  const wrap = document.getElementById('oee-chart');
+  wrap.innerHTML = running.map(m => {
+    const c = oeeColor(m.oee);
+    return `
+      <div class="oee-chart-row">
+        <div class="oee-chart-id">${m.id}</div>
+        <div class="oee-chart-bar-bg">
+          <div class="oee-chart-bar" style="width:${m.oee}%;background:${c}"></div>
+        </div>
+        <div class="oee-chart-val" style="color:${c}">${fmt(m.oee)}%</div>
+      </div>`;
+  }).join('');
+}
+
+function renderProd(machines) {
+  const rows = machines
+    .filter(m => m.production_shift > 0)
+    .sort((a, b) => b.production_shift - a.production_shift);
+  const tbody = document.getElementById('prod-tbody');
+  tbody.innerHTML = rows.map(m => `
+    <tr>
+      <td><span style="font-family:monospace;color:var(--blue)">${m.id}</span> <span style="color:var(--text2)">${m.type}</span></td>
+      <td>${fmtInt(m.production_shift)}</td>
+    </tr>`).join('');
+}
+
+function updateKPIs(data) {
+  const s = data.summary;
+  document.getElementById('kpi-active').textContent = s.active_count;
+  document.getElementById('kpi-total').textContent = s.total_count;
+  document.getElementById('kpi-active-lbl').textContent = s.active_count + ' çalışıyor';
+
+  const oee = s.oee_avg;
+  const oeeEl = document.getElementById('kpi-oee');
+  oeeEl.textContent = fmt(oee);
+  oeeEl.style.color = oeeColor(oee);
+
+  const delta = document.getElementById('kpi-oee-delta');
+  if (prevOEE != null) {
+    const diff = oee - prevOEE;
+    if (Math.abs(diff) > 0.05) {
+      delta.textContent = (diff > 0 ? '▲ ' : '▼ ') + fmt(Math.abs(diff)) + '%';
+      delta.className = 'kpi-delta ' + (diff > 0 ? 'up' : 'dn');
+    }
+  }
+  prevOEE = oee;
+
+  document.getElementById('kpi-prod').textContent = fmtInt(s.total_production);
+
+  const alarmEl = document.getElementById('kpi-alarms');
+  alarmEl.textContent = s.alarm_count;
+  alarmEl.closest('.kpi-val').style.color = s.alarm_count > 0 ? 'var(--red)' : 'var(--green)';
+  const alarmLbl = document.getElementById('kpi-alarm-lbl');
+  alarmLbl.textContent = s.alarm_count > 0 ? 'Müdahale gerekli' : 'Tüm sistemler normal';
+  alarmLbl.className = 'kpi-delta ' + (s.alarm_count > 0 ? 'dn' : 'up');
+}
+
+async function refresh() {
+  try {
+    const resp = await fetch(API);
+    if (!resp.ok) throw new Error(resp.status);
+    const data = await resp.json();
+
+    updateKPIs(data);
+    renderAlarms(data.summary);
+    renderOEEChart(data.machines);
+    renderProd(data.machines);
+
+    const grid = document.getElementById('machine-grid');
+    // Update or rebuild cards
+    data.machines.forEach(m => {
+      const existing = document.getElementById('card-' + m.id);
+      const html = renderMachine(m);
+      if (existing) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        existing.replaceWith(tmp.firstElementChild);
+      } else {
+        grid.insertAdjacentHTML('beforeend', html);
+      }
+    });
+
+    const ts = new Date().toLocaleTimeString('tr-TR');
+    document.getElementById('kpi-refresh-ts').textContent = ts;
+    document.getElementById('footer-ts').textContent = 'Son güncelleme: ' + ts;
+  } catch (e) {
+    console.error('Refresh failed', e);
+  }
+}
+
+// Clock
+function tick() {
+  document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString('tr-TR');
+}
+setInterval(tick, 1000);
+tick();
+
+// Data
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

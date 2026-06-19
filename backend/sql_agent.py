@@ -18,10 +18,14 @@ SQL_AGENT_COLLECTION = "service_records_sql"
 MAX_ROWS = 20
 
 _SQL_AGENT_DESCRIPTION = (
-    "Servis Kayıtları. Bakım, arıza, servis, alarm, sorun ve çözüm kayıtları veritabanı. "
-    "Geçmiş arıza kayıtlarını arar: hangi sorun tespit edildi, hangi işlem yapıldı. "
-    "Örnek sorular: toprak hatası nasıl çözüldü, servo alarmı kayıtları, "
-    "enkoder arızasında ne yapılmış, kaç adet hidrolik arıza kaydı var."
+    "Servis Kayıtları. Geçmiş bakım, arıza, servis, alarm, sorun ve çözüm kayıtları "
+    "veritabanı. Geçmiş arıza kayıtlarını arar: hangi sorun tespit edildi, hangi işlem "
+    "yapıldı, daha önce nasıl giderilmiş, daha önce bu sorun yaşandı mı, bakım geçmişi, "
+    "arıza geçmişi, servis geçmişi, arıza kaydı ara, daha önce ne yapılmış. "
+    "Örnek sorular: toprak hatası nasıl çözülmüş, servo alarmı kayıtlarına bak, "
+    "enkoder hatası daha önce nasıl giderilmiş, vakum hatasına daha önce ne yapılmış, "
+    "motor arızası kaç kez yaşanmış, bu arıza daha önce yaşandı mı, ASI toprak hatası "
+    "servis kaydı, destacker vakum sorunu geçmişi, hidrolik arızalarında ne yapılmış."
 )
 
 _SQL_PROMPT = """Türkçe soruları PostgreSQL SELECT sorgusuna çevir.
@@ -42,6 +46,8 @@ Kurallar:
 - Birden çok anahtar kelime varsa LIKE koşullarını AND/OR ile birleştir; genel kelimeleri
   (hata, sorun, arıza) koşula EKLEME, sadece ayırt edici kelimeleri kullan.
 - Her zaman LIMIT {max_rows} ekle.
+- ÖNEMLİ: Soru hem "kaç kez/kaç defa" HEM DE "nasıl çözüldü/ne yapıldı" içeriyorsa
+  COUNT değil tespit_edilenler+yapilan_islem döndür. Satır sayısı özetleyici tarafından sayılır.
 
 Örnekler:
 Soru: Toprak hatası nasıl çözülmüş?
@@ -50,8 +56,14 @@ SELECT tespit_edilenler, yapilan_islem FROM service_records WHERE tespit_norm LI
 Soru: Kaç adet servo arıza kaydı var?
 SELECT COUNT(*) FROM service_records WHERE tespit_norm LIKE '%servo%' LIMIT {max_rows}
 
+Soru: Enkoder hatası kaç kez yaşandı ve nasıl çözüldü?
+SELECT tespit_edilenler, yapilan_islem FROM service_records WHERE tespit_norm LIKE '%enkoder%' OR tespit_norm LIKE '%encoder%' LIMIT {max_rows}
+
 Soru: Enkoder sorunlarında ne yapılmış?
 SELECT tespit_edilenler, yapilan_islem FROM service_records WHERE tespit_norm LIKE '%enkoder%' OR tespit_norm LIKE '%encoder%' LIMIT {max_rows}
+
+Soru: En sık görülen arıza tipleri nelerdir?
+SELECT 'servo' AS tip, COUNT(*) AS adet FROM service_records WHERE tespit_norm LIKE '%servo%' UNION ALL SELECT 'sensor', COUNT(*) FROM service_records WHERE tespit_norm LIKE '%sensor%' UNION ALL SELECT 'vakum', COUNT(*) FROM service_records WHERE tespit_norm LIKE '%vakum%' UNION ALL SELECT 'toprak', COUNT(*) FROM service_records WHERE tespit_norm LIKE '%toprak%' UNION ALL SELECT 'kablo', COUNT(*) FROM service_records WHERE tespit_norm LIKE '%kablo%' UNION ALL SELECT 'hidrolik', COUNT(*) FROM service_records WHERE tespit_norm LIKE '%hidrolik%' ORDER BY adet DESC LIMIT {max_rows}
 
 Soru: {question}
 """
@@ -147,7 +159,14 @@ def build_summary_prompt(question: str, rows: List[Dict[str, Any]], system_promp
     return (
         f"{role}\n"
         f"Aşağıdaki veritabanı kayıtlarını kullanarak soruyu Türkçe yanıtla. "
-        f"Kayıtlardaki bilgilerin dışına çıkma; benzer kayıtları grupla ve net adımlar ver.\n\n"
+        f"Kayıtlardaki bilgilerin dışına çıkma; benzer kayıtları grupla ve net adımlar ver. "
+        f"Kayıtlarda geçen teknik terimleri, parça ve sinyal adlarını (sensör, kablo, "
+        f"soket, valf, modül vb.) cevabında aynen kullan — genel ifadelerle değiştirme. "
+        f"Soruda geçen sistem, hata ve bileşen adlarını da (örn. ASI, servo, otomatik mod) "
+        f"cevabında açıkça tekrar et. "
+        f"Cevabında asla SQL sorgusu, kod bloğu veya teknik sorgu detayı gösterme; "
+        f"sadece düz metin ve madde işaretleri kullan. Kendini tanıtma, rolünden bahsetme; "
+        f"doğrudan cevapla başla.\n\n"
         f"KAYITLAR:\n{rows_text}\n\n"
         f"SORU: {question}\n\n"
         f"CEVAP:"
@@ -173,6 +192,30 @@ def _single_keyword_sql(sql: str) -> Optional[str]:
     )
 
 
+def _is_count_only(rows: List[Dict[str, Any]]) -> bool:
+    """True when the result is a single row with only a numeric count column."""
+    return (
+        len(rows) == 1
+        and len(rows[0]) == 1
+        and list(rows[0].keys())[0].lower() in ("count", "count(*)", "adet", "sayi")
+    )
+
+
+def _detail_sql_from_count(sql: str) -> Optional[str]:
+    """Turn a COUNT(*) query into a detail query returning tespit_edilenler+yapilan_islem."""
+    m = re.search(r"(WHERE\s+.+?)(?:LIMIT\s+\d+\s*)?$", sql, re.IGNORECASE | re.DOTALL)
+    if not m:
+        return None
+    where_clause = m.group(1).strip()
+    return (
+        f"SELECT tespit_edilenler, yapilan_islem FROM service_records "
+        f"{where_clause} LIMIT {MAX_ROWS}"
+    )
+
+
+_HOW_PATTERN = re.compile(r"\b(nasil|ne yapil|cozul|gideril|ne yapilm|nasil gider)\b", re.IGNORECASE)
+
+
 async def try_sql_path(pool, llm, question: str) -> Optional[Dict[str, Any]]:
     """Full NL→SQL attempt. Returns {'sql', 'rows'} or None (caller falls back to RAG)."""
     sql = await generate_sql(question, llm)
@@ -189,6 +232,18 @@ async def try_sql_path(pool, llm, question: str) -> Optional[Dict[str, Any]]:
     for attempt in attempts:
         rows = await run_sql_query(pool, attempt)
         if rows:
+            # COUNT-only + "how was it resolved" → fetch the actual records too
+            q_norm = question.translate(_TURKISH_MAP).lower()
+            if _is_count_only(rows) and _HOW_PATTERN.search(q_norm):
+                detail = _detail_sql_from_count(attempt)
+                if detail:
+                    detail_rows = await run_sql_query(pool, detail)
+                    if detail_rows:
+                        count_val = list(rows[0].values())[0]
+                        logger.info("COUNT upgraded to detail query", sql=detail[:200], rows=len(detail_rows))
+                        # Prepend a synthetic count row so the summariser knows the total
+                        combined = [{"toplam_kayit": count_val}] + detail_rows
+                        return {"sql": detail, "rows": combined}
             logger.info("SQL path answered", sql=attempt[:200], rows=len(rows))
             return {"sql": attempt, "rows": rows}
     logger.info("SQL returned no rows after relaxation", sql=sql[:200])
@@ -223,20 +278,31 @@ async def seed_service_records(pool, excel_path: str) -> int:
 
 
 async def ensure_sql_agent(pool, llm, settings) -> None:
-    """Upsert the 'Servis Kayıtları' router-selectable SQL agent."""
+    """Upsert the 'Servis Kayıtları' router-selectable SQL agent.
+
+    The routing embedding is refreshed on every startup so edits to
+    _SQL_AGENT_DESCRIPTION propagate to the DB automatically.
+    """
     try:
         async with pool.acquire() as conn:
             existing = await conn.fetchval(
-                "SELECT id FROM agents WHERE type='sql' AND tenant_id=1 AND user_id=1 LIMIT 1"
+                "SELECT id FROM agents WHERE name=$1 AND tenant_id=1 AND user_id=1 LIMIT 1",
+                SQL_AGENT_NAME,
             )
             if existing:
+                emb = await llm.get_embedding(_SQL_AGENT_DESCRIPTION)
+                emb_str = "[" + ",".join(str(v) for v in emb) + "]"
+                await conn.execute(
+                    "UPDATE agents SET embedding=$1::vector, type='sql' WHERE id=$2",
+                    emb_str, existing,
+                )
                 return
             row = await conn.fetchrow(
                 """INSERT INTO agents (tenant_id, user_id, name, system_prompt, model, collection, type)
                    VALUES (1, 1, $1, $2, $3, $4, 'sql') RETURNING id""",
                 SQL_AGENT_NAME,
-                "Sen Coiltech servis kayıtları uzmanısın. Geçmiş arıza ve çözüm kayıtları "
-                "veritabanından SQL ile cevap verirsin. Cevaplarını Türkçe ver.",
+                "Sen Coiltech servis kayıtları uzmanısın. Geçmiş arıza ve çözüm kayıtlarına "
+                "dayanarak cevap verirsin. Cevaplarını Türkçe ver.",
                 settings.DEFAULT_MODEL,
                 SQL_AGENT_COLLECTION,
             )

@@ -86,16 +86,21 @@ async def ingest_file(
                 new_chunks.append(c)
 
         if not new_chunks:
-            existing_doc = await conn.fetchval(
-                """SELECT id FROM documents
-                   WHERE original_filename=$1 AND tenant_id=$2 AND user_id=$3
-                   ORDER BY id DESC LIMIT 1""",
-                os.path.basename(file_path), tenant_id, user_id,
+            # Chunks already exist but still insert a fresh document record so
+            # find_recent_document() can detect this upload for agent creation.
+            doc_row = await conn.fetchrow(
+                """
+                INSERT INTO documents
+                    (tenant_id, user_id, original_filename, rag_collection, metadata)
+                VALUES ($1, $2, $3, $4, $5) RETURNING id
+                """,
+                tenant_id, user_id, os.path.basename(file_path),
+                collection, json.dumps(metadata),
             )
             return {
                 "chunks_created": chunks_created,
                 "chunks_stored": 0,
-                "document_id": existing_doc,
+                "document_id": doc_row["id"],
                 "collection": collection,
                 "already_ingested": True,
             }
