@@ -1,8 +1,4 @@
-Commercial Terms 2026
-
-Standard quotation validity: 30 days
-Default incoterm: EXW Bursa
-Standard payment terms for strategic customers:
-- 40 percent advance
-- 50 percent before shipment
-- 10 percent after SAT sign-off
+Synthetic Commercial Terms Example
+This is not a quotation, price list, or contract.
+Demo quote: define scope, acceptance criteria, delivery milestone, and three
+illustrative payment stages. No customer or actual price is represented.

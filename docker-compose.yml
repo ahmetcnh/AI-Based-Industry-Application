@@ -47,7 +47,7 @@ services:
     ports:
       - "3000:8080"
     environment:
-      OPENAI_API_BASE_URL: http://172.31.29.160:8000/v1
+      OPENAI_API_BASE_URL: http://backend:8000/v1
       OPENAI_API_KEY: unused
       OLLAMA_BASE_URL: ""
       ENABLE_OLLAMA_API: "false"

@@ -1,7 +1,4 @@
-Destacker and Blank Line Integration Concept
-
-Project concept:
-- Destacker loads blanks into transfer conveyor
-- Conveyor synchronizes with press transfer robot cell
-- Blank counter and double-sheet sensor report to line PLC
-- Optional reject gate diverts oil-contaminated blanks
+Synthetic Destacker Integration Concept
+Demo destacker feeds a transfer conveyor and reports a blank counter to a PLC.
+A fictional double-sheet sensor stops the simulated line for inspection.
+No customer, site, or completed project is represented.

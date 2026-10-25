@@ -1,7 +1,5 @@
-Critical Spare Parts Stocking Guide
-
-Recommended customer stock for high-uptime lines:
-- Servo motor SM-400: 1 piece for each two active compact drives
-- Encoder kit ENC-CTL-01: 2 pieces per CTL line
-- Bearing set BRG-6208-2RS: 4 pieces per straightener section
-- Vacuum valve kit VAC-24V-06: 2 pieces per transfer robot cell
+Synthetic Spare Parts Stock Example
+DEMO-ENC-01 encoder kit: illustrative reorder level 2.
+DEMO-VAC-01 vacuum valve: illustrative reorder level 2.
+DEMO-BRG-01 bearing set: illustrative reorder level 4.
+These are fictional codes and stock levels.

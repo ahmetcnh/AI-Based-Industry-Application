@@ -105,11 +105,11 @@ bitirme2/
 │   ├── scatter_quality_speed.py    # Kalite-hız scatter plot
 │   └── charts/                  # Üretilen PNG grafikler
 ├── data/
-│   └── demo_docs/               # Demo dökümanları (PDF + TXT)
+│   └── demo_docs/               # Sentetik demo dökümanları (PDF + TXT)
 ├── tests/
 │   ├── test_backend.py
 │   └── test_agent_features.py
-├── issue_solution_final.xlsx    # 781 arıza/çözüm kaydı (service_records seed)
+├── issue_solution_final.xlsx    # 781 sentetik arıza/çözüm kaydı (service_records seed)
 ├── soru.md                      # Demo soruları (agent başına 5 soru)
 ├── docker-compose.yml
 ├── .env.example
@@ -152,6 +152,8 @@ docker compose up -d
 ```
 
 İlk başlatmada PostgreSQL şeması oluşturulur, `issue_solution_final.xlsx` embed edilir ve 9 departman agent'ı otomatik seed edilir.
+
+Depodaki Excel ve `data/demo_docs/` içerikleri tamamen kurgusal örneklerdir; gerçek müşteri, servis veya fiyat verisi içermez. Örnek dosyaları yeniden üretmek için `python -m pip install -r requirements-demo.txt` ardından `python scripts/generate_public_demo_data.py` çalıştırın. Mevcut veritabanında eski kayıtlar varsa yeni örnekler kendiliğinden üzerine yazılmaz; yeni bir demo veritabanı ile başlatın.
 
 ### 3. Erişim
 

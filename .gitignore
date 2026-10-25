@@ -1,5 +1,7 @@
 # ── Secrets & config ─────────────────────────────────────────
 .env
+.env.*
+!.env.example
 *.key
 *.pem
 
@@ -28,6 +30,10 @@ coverage.xml
 data/uploads/
 data/chroma_db/
 data/*.db
+*.db
+legacy/
+docs/superpowers/
+docs/EKSIKLER_VE_GOREVLER.md
 uploads/
 *.sqlite3
 *.sqlite

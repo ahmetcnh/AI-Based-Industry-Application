@@ -1,16 +1,5 @@
-Cut-to-Length Line Commissioning Checklist
-
-Mechanical:
-- Foundation bolts torqued and marked
-- Straightener alignment verified
-- Shear blade gap adjusted to material thickness
-
-Electrical and controls:
-- Emergency stop chain tested
-- Line encoder scaling verified
-- Recipe transfer from HMI to PLC confirmed
-
-Process validation:
-- Feed length deviation below 0.15 mm
-- Line speed ramp stable to rated speed
-- Stacker discharge synchronized with shear cycle
+Synthetic Cut-to-Length Commissioning Checklist
+Mechanical: check alignment, foundation fasteners, and shear clearance.
+Electrical: test emergency stop, encoder direction, and PLC recipe transfer.
+Process: run a low-speed dry cycle and record a fictional sample cut.
+This is not an operating procedure for a real machine.

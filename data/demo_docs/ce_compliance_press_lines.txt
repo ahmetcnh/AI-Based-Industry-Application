@@ -1,7 +1,4 @@
-CE Compliance for Press Feeding and Transfer Lines
-
-Applicable references:
-- Machinery Directive 2006/42/EC
-- EN ISO 12100 risk assessment
-- EN 60204-1 electrical safety
-- EN ISO 13849-1 safety-related control systems
+Synthetic CE checklist example
+This is not a certificate or legal declaration.
+Demo press line: document the risk assessment, guard checks, emergency-stop test,
+and electrical inspection before a fictional acceptance test.

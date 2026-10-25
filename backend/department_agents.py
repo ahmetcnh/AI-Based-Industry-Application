@@ -159,18 +159,18 @@ _DEPARTMENT_AGENTS = [
             "Özel müşteri projeleri ve referans proje portföyü. Müşteriye özel tasarım, "
             "turnkey çözüm, anahtar teslim proje, özel mühendislik projesi, referans proje, "
             "geçmiş projeler, tamamlanan projeler, müşteri referansı. "
-            "Kardemir modernizasyon, Ford Otosan pres hattı, Erdemir servis hattı gibi "
-            "gerçekleştirilmiş endüstriyel projeler. Portföy, müşteri spesifik çözüm, "
+            "Kurgusal bobin hattı, pres transfer ve servis hattı projeleri gibi "
+            "örnek endüstriyel senaryolar. Portföy, müşteri spesifik çözüm, "
             "özel makine tasarımı, prototip, feasibility, özgün sistem entegrasyonu. "
             "Örnek sorular: daha önce hangi müşteriler için özel proje yapıldı, "
             "referans projeler neler, müşteriye özel tasarım nasıl yapılır, "
-            "özel proje portföyünde hangi endüstriler var, Kardemir projesi nasıl sonuçlandı, "
+            "özel proje portföyünde hangi endüstriler var, örnek proje nasıl sonuçlandı, "
             "turnkey proje kapsamı nedir, özel sistem entegrasyonu örnekleri."
         ),
         (
             "Sen Coiltech özel projeler ve referans portföy uzmanısın. Müşteriye özel "
-            "mühendislik projeleri, tamamlanan referans projeler (Kardemir, Ford Otosan, "
-            "Erdemir vb.), turnkey çözümler ve özel makine tasarımları hakkında "
+            "mühendislik projeleri, kurgusal referans senaryoları, turnkey çözümler "
+            "ve özel makine tasarımları hakkında "
             "Türkçe cevap verirsin."
         ),
         "special_projects",

@@ -204,16 +204,16 @@ _COLLECTION_META: Dict[str, Dict[str, str]] = {
         "name": "Özel Projeler",
         "system_prompt": (
             "Sen Coiltech özel projeler ve referans portföy uzmanısın. Müşteriye özel "
-            "mühendislik projeleri, tamamlanan referans projeler (Kardemir, Ford Otosan, "
-            "Erdemir vb.), turnkey çözümler ve özel makine tasarımları hakkında "
+            "mühendislik projeleri, kurgusal referans senaryoları, turnkey çözümler "
+            "ve özel makine tasarımları hakkında "
             "Türkçe cevap verirsin."
         ),
         "routing_description": (
             "Özel müşteri projeleri ve referans proje portföyü. Müşteriye özel tasarım, "
             "turnkey çözüm, anahtar teslim proje, özel mühendislik projesi, referans proje, "
             "geçmiş projeler, tamamlanan projeler, müşteri referansı. "
-            "Kardemir modernizasyon, Ford Otosan pres hattı, Erdemir servis hattı gibi "
-            "gerçekleştirilmiş endüstriyel projeler. Portföy, müşteri spesifik çözüm. "
+            "Kurgusal bobin hattı, pres transfer ve servis hattı projeleri gibi "
+            "örnek endüstriyel senaryolar. Portföy, müşteri spesifik çözüm. "
             "Örnek sorular: daha önce hangi müşteriler için özel proje yapıldı, "
             "referans projeler neler, turnkey proje kapsamı nedir, bu projeyle ilgili bilgi ver."
         ),
